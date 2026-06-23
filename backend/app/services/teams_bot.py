@@ -139,6 +139,22 @@ def send_adaptive_card(
             },
         }],
     }
+    return _post_activity(conversation, payload)
+
+
+def send_text_message(conversation: TeamsBotConversation, text: str) -> dict[str, Any]:
+    if not settings.teams_bot_app_id or not settings.teams_bot_app_password:
+        raise RuntimeError("Teams Bot App ID/Password is not configured")
+
+    payload = {
+        "type": "message",
+        "from": {"id": settings.teams_bot_app_id, "name": settings.teams_bot_name},
+        "text": text,
+    }
+    return _post_activity(conversation, payload)
+
+
+def _post_activity(conversation: TeamsBotConversation, payload: dict[str, Any]) -> dict[str, Any]:
     url = f"{conversation.service_url.rstrip('/')}/v3/conversations/{quote(conversation.conversation_id, safe='')}/activities"
     response = requests.post(
         url,

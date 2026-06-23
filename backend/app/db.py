@@ -107,10 +107,12 @@ def ensure_schema_updates() -> None:
             user_aad_object_id varchar(160) not null default '',
             user_name varchar(240) not null default '',
             raw_activity text not null default '',
+            welcome_sent_at timestamp,
             last_seen_at timestamp not null default now(),
             created_at timestamp not null default now(),
             updated_at timestamp not null default now()
         )""",
+        "alter table if exists teams_bot_conversations add column if not exists welcome_sent_at timestamp",
         "create unique index if not exists uq_teams_bot_conversation_id on teams_bot_conversations(conversation_id)",
         """create table if not exists index_notification_configs (
             id serial primary key,

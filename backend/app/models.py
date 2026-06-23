@@ -1237,6 +1237,7 @@ class TeamsBotConversation(Base):
     user_aad_object_id: Mapped[str] = mapped_column(String(160), default="")
     user_name: Mapped[str] = mapped_column(String(240), default="")
     raw_activity: Mapped[str] = mapped_column(Text, default="")
+    welcome_sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     last_seen_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
