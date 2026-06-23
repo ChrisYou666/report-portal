@@ -118,25 +118,29 @@ def send_adaptive_card(
         {"type": "TextBlock", "size": "Medium", "weight": "Bolder", "wrap": True, "text": title},
     ]
     body.extend({"type": "TextBlock", "wrap": True, "text": line} for line in lines if line)
+    actions: list[dict[str, Any]] = []
     if link_url:
-        body.append({
-            "type": "TextBlock",
-            "wrap": True,
-            "spacing": "Medium",
-            "text": f"{link_label}: [{link_url}]({link_url})",
+        actions.append({
+            "type": "Action.OpenUrl",
+            "title": link_label,
+            "url": link_url,
         })
+
+    card_content: dict[str, Any] = {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.2",
+        "body": body,
+    }
+    if actions:
+        card_content["actions"] = actions
 
     payload = {
         "type": "message",
         "from": {"id": settings.teams_bot_app_id, "name": settings.teams_bot_name},
         "attachments": [{
             "contentType": "application/vnd.microsoft.card.adaptive",
-            "content": {
-                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                "type": "AdaptiveCard",
-                "version": "1.2",
-                "body": body,
-            },
+            "content": card_content,
         }],
     }
     return _post_activity(conversation, payload)

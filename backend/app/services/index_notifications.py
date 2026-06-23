@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Any
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 from sqlalchemy.orm import Session
 
@@ -59,6 +60,22 @@ def build_indicator_url(index_code: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
 
 
+def build_teams_tab_url(index_code: str, index_name: str) -> str:
+    web_url = build_indicator_url(index_code)
+    if not settings.teams_deep_link_enabled or not settings.teams_app_id:
+        return web_url
+
+    context = json.dumps({"subEntityId": index_code}, ensure_ascii=False, separators=(",", ":"))
+    query = urlencode({
+        "webUrl": web_url,
+        "label": f"{index_name} 指数",
+        "context": context,
+    })
+    app_id = quote(settings.teams_app_id, safe="")
+    entity_id = quote(settings.teams_tab_entity_id or "indicator", safe="")
+    return f"https://teams.microsoft.com/l/entity/{app_id}/{entity_id}?{query}"
+
+
 def send_index_notification(db: Session, config_id: int, force: bool = False) -> IndexNotificationConfig:
     cfg = db.get(IndexNotificationConfig, config_id)
     if not cfg:
@@ -78,7 +95,7 @@ def send_index_notification(db: Session, config_id: int, force: bool = False) ->
             raise RuntimeError("Teams Bot 目标不存在或已删除")
 
         snapshot = _build_index_snapshot(db, cfg.index_code, cfg.index_name)
-        link = build_indicator_url(cfg.index_code)
+        link = build_teams_tab_url(cfg.index_code, cfg.index_name)
         send_adaptive_card(
             target,
             title=f"{cfg.index_name} 指标通知",
@@ -102,7 +119,7 @@ def preview_index_notification(db: Session, index_code: str, index_name: str) ->
     return {
         "title": f"{index_name} 指标通知",
         "lines": _build_index_snapshot(db, index_code, index_name),
-        "url": build_indicator_url(index_code),
+        "url": build_teams_tab_url(index_code, index_name),
     }
 
 

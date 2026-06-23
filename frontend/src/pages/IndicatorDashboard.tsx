@@ -26,12 +26,30 @@ const INDICES = [
 ] as const
 
 type IndexId = (typeof INDICES)[number]['id']
+type SelectedIndex = 'composite' | IndexId
 type FYKey   = 'current' | 'previous'
 
-function initialSelectedIndex(): 'composite' | IndexId {
-  const value = new URLSearchParams(window.location.search).get('index')
+function normalizeIndexId(value: string | null | undefined): SelectedIndex | null {
   if (value === 'composite') return 'composite'
-  return INDICES.some(idx => idx.id === value) ? value as IndexId : 'composite'
+  return INDICES.some(idx => idx.id === value) ? value as IndexId : null
+}
+
+function searchValue(name: string): string | null {
+  const search = new URLSearchParams(window.location.search)
+  const direct = search.get(name)
+  if (direct) return direct
+
+  const marker = window.location.hash.indexOf('?')
+  if (marker < 0) return null
+  return new URLSearchParams(window.location.hash.slice(marker + 1)).get(name)
+}
+
+function initialSelectedIndex(): SelectedIndex {
+  return (
+    normalizeIndexId(searchValue('index')) ||
+    normalizeIndexId(searchValue('subEntityId')) ||
+    'composite'
+  )
 }
 
 // 每个财年 5 月的目标值（9月从 103 起线性增长，5月 fyPos=8 时达到目标值）
@@ -169,7 +187,7 @@ function MultiLineChart({ xData, series }: { xData: string[]; series: Series[] }
 
 // ── 页面 ──────────────────────────────────────────────────────
 export default function IndicatorDashboard() {
-  const [selectedId, setSelectedId]   = useState<'composite' | IndexId>(() => initialSelectedIndex())
+  const [selectedId, setSelectedId]   = useState<SelectedIndex>(() => initialSelectedIndex())
   const [dimension, setDimension]     = useState<'monthly' | 'daily' | 'lastmonth'>('monthly')
   const [selectedFYs, setSelectedFYs] = useState<Set<FYKey>>(new Set<FYKey>(['current']))
 
@@ -202,6 +220,18 @@ export default function IndicatorDashboard() {
   }
 
   // 始终拉取 24 月（覆盖两个财年）
+  useEffect(() => {
+    let cancelled = false
+    import('@microsoft/teams-js')
+      .then(({ app }) => app.initialize().then(() => app.getContext()))
+      .then(context => {
+        const next = normalizeIndexId(context.page?.subPageId)
+        if (!cancelled && next) setSelectedId(next)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
   const periods24 = useMemo(() => prevMonths(24), [])
 
   useEffect(() => {

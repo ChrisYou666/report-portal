@@ -9,6 +9,9 @@ class Settings(BaseSettings):
 
     teams_webhook_url: str = ""
     teams_portal_url: str = "https://julongtongchuan.icu/report-portal/indicator"
+    teams_app_id: str = "8c5d2df2-4650-4d73-be4c-d17e28b26e5d"
+    teams_tab_entity_id: str = "indicator"
+    teams_deep_link_enabled: bool = True
     teams_bot_app_id: str = ""
     teams_bot_app_password: str = ""
     teams_bot_tenant_id: str = "botframework.com"
