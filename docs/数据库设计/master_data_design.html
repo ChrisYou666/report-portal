@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>主数据设计 — 数据中台门户</title>
+  <style>
+    :root {
+      --bg: #f4f6f9; --panel: #fff; --ink: #1f2933; --muted: #6b7a8d;
+      --line: #dde3ec; --head: #f0f4f8; --green: #1b6b5f; --gold: #c98a1c;
+      --blue: #2563eb; --red: #c53030; --purple: #7c3aed;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Microsoft YaHei","Segoe UI",Arial,sans-serif; font-size: 13.5px;
+           background: var(--bg); color: var(--ink); line-height: 1.6; }
+    a { color: var(--blue); text-decoration: none; }
+
+    /* ── header ── */
+    header { position: sticky; top: 0; z-index: 20; background: var(--panel);
+              border-bottom: 1px solid var(--line); padding: 14px 28px 10px;
+              box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .header-top { display: flex; align-items: baseline; gap: 14px; }
+    h1 { font-size: 20px; font-weight: 700; }
+    .subtitle { color: var(--muted); font-size: 12px; }
+    nav { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+    nav a { padding: 4px 12px; border: 1px solid var(--line); border-radius: 20px;
+             font-size: 12px; background: #f8fafc; color: var(--muted); transition: .15s; }
+    nav a:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    /* ── layout ── */
+    main { padding: 24px 28px 60px; max-width: 1100px; margin: 0 auto; display: grid; gap: 24px; }
+
+    /* ── section ── */
+    .section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    .section-head { display: flex; align-items: center; gap: 10px; padding: 14px 20px;
+                    border-bottom: 1px solid var(--line); background: #fafcff; }
+    .section-head h2 { font-size: 15px; font-weight: 700; }
+    .section-body { padding: 20px; }
+
+    /* ── hierarchy ── */
+    .hierarchy { font-family: "Consolas","Cascadia Code",monospace; font-size: 13px;
+                 background: #0f172a; color: #e2e8f0; padding: 20px 24px;
+                 border-radius: 8px; line-height: 1.8;
+                 white-space: pre; overflow-x: auto; }
+    .h-company { color: #fbbf24; font-weight: 700; }
+    .h-site    { color: #34d399; }
+    .h-factory { color: #60a5fa; }
+    .h-div     { color: #a78bfa; }
+    .h-blok    { color: #f87171; }
+    .h-label   { color: #64748b; font-size: 11px; }
+
+    /* ── entity card ── */
+    .entity-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    @media (max-width: 800px) { .entity-grid { grid-template-columns: 1fr; } }
+
+    .entity-card { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    .entity-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+                   border-bottom: 1px solid var(--line); }
+    .entity-head h3 { font-size: 13.5px; font-weight: 700; }
+    .entity-head code { font-size: 11.5px; color: var(--muted); background: #f0f4f8;
+                        padding: 1px 7px; border-radius: 4px; }
+    .entity-badge { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: var(--head); padding: 7px 10px; text-align: left; font-size: 11px;
+         font-weight: 700; color: var(--muted); border-bottom: 1px solid var(--line);
+         text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+    td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafcff; }
+
+    /* field badges */
+    .fk-badge { font-size: 10px; font-weight: 700; background: #dbeafe; color: #1e40af;
+                padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+    .pk-badge { font-size: 10px; font-weight: 700; background: #fef9c3; color: #78350f;
+                padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+    .uk-badge { font-size: 10px; font-weight: 700; background: #dcfce7; color: #166534;
+                padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+    .red-badge { font-size: 10px; font-weight: 700; background: #fce7f3; color: #9d174d;
+                 padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+    code { font-family: "Consolas","Cascadia Code",monospace; font-size: 12px; }
+    .type-str  { color: #1e40af; } .type-int  { color: #5b21b6; }
+    .type-float{ color: #166534; } .type-bool { color: #0c4a6e; }
+    .muted { color: var(--muted); }
+    .confirmed-badge { font-size: 10px; font-weight: 700; background: #dcfce7; color: #166534;
+                       padding: 1px 6px; border-radius: 3px; margin-right: 4px; }
+    .pending-badge   { font-size: 10px; font-weight: 700; background: #fef3c7; color: #92400e;
+                       padding: 1px 6px; border-radius: 3px; margin-right: 4px; }
+    .sap-badge       { font-size: 10px; background: #f1f5f9; color: #475569; font-family: monospace;
+                       padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+    .section-divider { background: #f8fafc; border-top: 1px solid var(--line);
+                       border-bottom: 1px solid var(--line); }
+    .section-divider td { padding: 5px 10px; font-size: 11px; font-weight: 700;
+                          text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+
+    /* ── decisions ── */
+    .decisions { display: grid; gap: 12px; }
+    .decision { background: #fafcff; border: 1px solid var(--line); border-left: 3px solid var(--green);
+                border-radius: 6px; padding: 12px 16px; }
+    .decision h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .decision p  { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .decision code { background: #f0f4f8; padding: 0 4px; border-radius: 3px; color: var(--ink); font-size: 12px; }
+
+    /* ── flow ── */
+    .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+    .flow-node { background: #f0f4f8; border: 1px solid var(--line); border-radius: 6px;
+                 padding: 8px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .flow-arrow { padding: 0 8px; color: var(--muted); font-size: 16px; }
+
+    /* ── comparison ── */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .compare-col { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    .compare-head { padding: 8px 14px; font-size: 12px; font-weight: 700;
+                    text-transform: uppercase; letter-spacing: .05em; }
+    .compare-head.dim { background: #dcfce7; color: #166534; }
+    .compare-head.dwd { background: #dbeafe; color: #1e40af; }
+    .compare-body { padding: 12px 14px; font-size: 13px; color: var(--muted); }
+    .compare-body li { margin-bottom: 4px; }
+
+    footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>主数据（DIM 层）设计文档</h1>
+    <span class="subtitle">数据中台门户 · 组织架构主数据 · 2026-06-02</span>
+  </div>
+  <nav>
+    <a href="#hierarchy">层级总览</a>
+    <a href="#entities">实体设计</a>
+    <a href="#decisions">设计决策</a>
+    <a href="#dim-vs-dwd">DIM vs DWD</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ── 层级总览 ── -->
+  <section class="section" id="hierarchy">
+    <div class="section-head">
+      <h2>组织架构层级</h2>
+    </div>
+    <div class="section-body">
+      <pre class="hierarchy"><span class="h-company">dim_company</span>  <span class="h-label">公司（顶层）</span>
+│
+├── <span class="h-site">dim_site</span>      <span class="h-label">园区/Estate（农业生产单元，company_code → dim_company）</span>
+│   └── <span class="h-div">dim_division</span>  <span class="h-label">小区/Afdeling（site_code → dim_site）</span>
+│       └── <span class="h-blok">dim_blok</span>      <span class="h-label">地块/Blok（最小铲果单元，division_code → dim_division）</span>
+│
+└── <span class="h-factory">dim_factory</span>   <span class="h-label">工厂（加工厂，独立挂在公司下，company_code → dim_company）</span></pre>
+
+      <div style="margin-top:16px;display:flex;gap:16px;flex-wrap:wrap">
+        <div class="flow">
+          <div class="flow-node" style="border-color:#fbbf24;color:#92400e">公司</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" style="border-color:#34d399;color:#065f46">园区</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" style="border-color:#a78bfa;color:#4c1d95">小区</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" style="border-color:#f87171;color:#7f1d1d">地块</div>
+        </div>
+        <div class="flow">
+          <div class="flow-node" style="border-color:#fbbf24;color:#92400e">公司</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" style="border-color:#60a5fa;color:#1e3a8a">工厂</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 实体设计 ── -->
+  <section class="section" id="entities">
+    <div class="section-head">
+      <h2>各实体字段设计</h2>
+    </div>
+    <div class="section-body">
+      <div class="entity-grid">
+
+        <!-- dim_company -->
+        <div class="entity-card">
+          <div class="entity-head">
+            <div class="entity-badge" style="background:#fbbf24"></div>
+            <h3>公司</h3>
+            <code>dim_company</code>
+          </div>
+          <table>
+            <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pk-badge">PK</span><code>id</code></td><td class="type-int">int</td><td>主键</td></tr>
+              <tr><td><span class="uk-badge">UK</span><code>code</code></td><td class="type-str">str</td><td>公司代码，如 <code>GIN</code></td></tr>
+              <tr><td><code>name</code></td><td class="type-str">str</td><td>中文名</td></tr>
+              <tr><td><code>name_id</code></td><td class="type-str">str</td><td>印尼语名</td></tr>
+              <tr><td><code>country</code></td><td class="type-str">str</td><td>国家，默认 Indonesia</td></tr>
+              <tr><td><code>is_active</code></td><td class="type-bool">bool</td><td>是否启用</td></tr>
+              <tr><td><code>external_id</code></td><td class="type-str">str</td><td>SAP 公司码（BUKRS）</td></tr>
+              <tr><td><code>source</code></td><td class="type-str">str</td><td>数据来源：manual / sync</td></tr>
+              <tr><td><code>remark</code></td><td class="type-str">text</td><td>备注</td></tr>
+              <tr><td><code>created_at / updated_at</code></td><td class="type-str">datetime</td><td>审计时间</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- dim_site -->
+        <div class="entity-card">
+          <div class="entity-head">
+            <div class="entity-badge" style="background:#34d399"></div>
+            <h3>园区</h3>
+            <code>dim_site</code>
+          </div>
+          <table>
+            <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pk-badge">PK</span><code>id</code></td><td class="type-int">int</td><td>主键</td></tr>
+              <tr><td><span class="fk-badge">FK</span><code>company_code</code></td><td class="type-str">str</td><td>→ dim_company.code</td></tr>
+              <tr><td><span class="uk-badge">UK</span><code>code</code></td><td class="type-str">str</td><td>园区代码，如 <code>07</code></td></tr>
+              <tr><td><code>name</code></td><td class="type-str">str</td><td>中文名，如 <code>七园</code></td></tr>
+              <tr><td><code>name_id</code></td><td class="type-str">str</td><td>印尼语名，如 <code>Estate 7</code></td></tr>
+              <tr><td><code>region</code></td><td class="type-str">str</td><td>所在地区/省份</td></tr>
+              <tr><td><code>country</code></td><td class="type-str">str</td><td>默认 Indonesia</td></tr>
+              <tr><td><code>is_active</code></td><td class="type-bool">bool</td><td></td></tr>
+              <tr><td><code>external_id</code></td><td class="type-str">str</td><td>SAP 工厂码（WERKS）</td></tr>
+              <tr><td><code>source</code></td><td class="type-str">str</td><td>manual / sync</td></tr>
+              <tr><td><code>remark</code></td><td class="type-str">text</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- dim_factory -->
+        <div class="entity-card">
+          <div class="entity-head">
+            <div class="entity-badge" style="background:#60a5fa"></div>
+            <h3>工厂</h3>
+            <code>dim_factory</code>
+          </div>
+          <table>
+            <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pk-badge">PK</span><code>id</code></td><td class="type-int">int</td><td>主键</td></tr>
+              <tr><td><span class="fk-badge">FK</span><code>company_code</code></td><td class="type-str">str</td><td>→ dim_company.code</td></tr>
+              <tr><td><span class="uk-badge">UK</span><code>code</code></td><td class="type-str">str</td><td>工厂代码</td></tr>
+              <tr><td><code>name</code></td><td class="type-str">str</td><td>工厂名称</td></tr>
+              <tr><td><code>name_id</code></td><td class="type-str">str</td><td>印尼语名</td></tr>
+              <tr><td><code>factory_type</code></td><td class="type-str">str</td><td><code>pom</code> 毛棕榈油 | <code>kcp</code> 棕仁榨油 | <code>refinery</code> 精炼</td></tr>
+              <tr><td><code>location</code></td><td class="type-str">str</td><td>地址</td></tr>
+              <tr><td><code>capacity_ton_per_hour</code></td><td class="type-float">float</td><td>设计产能（吨/小时）</td></tr>
+              <tr><td><code>is_active</code></td><td class="type-bool">bool</td><td></td></tr>
+              <tr><td><code>external_id</code></td><td class="type-str">str</td><td>SAP 工厂码</td></tr>
+              <tr><td><code>source / remark</code></td><td class="type-str">str</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- dim_division -->
+        <div class="entity-card">
+          <div class="entity-head">
+            <div class="entity-badge" style="background:#a78bfa"></div>
+            <h3>小区 / Afdeling</h3>
+            <code>dim_division</code>
+          </div>
+          <table>
+            <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pk-badge">PK</span><code>id</code></td><td class="type-int">int</td><td>主键</td></tr>
+              <tr><td><span class="red-badge">冗余</span><code>company_code</code></td><td class="type-str">str</td><td>→ dim_company（冗余，方便跨园区查询）</td></tr>
+              <tr><td><span class="fk-badge">FK</span><code>site_code</code></td><td class="type-str">str</td><td>→ dim_site.code</td></tr>
+              <tr><td><span class="uk-badge">UK</span><code>code</code></td><td class="type-str">str</td><td>小区代码（在园区内唯一）</td></tr>
+              <tr><td><code>name</code></td><td class="type-str">str</td><td>中文名</td></tr>
+              <tr><td><code>name_id</code></td><td class="type-str">str</td><td>印尼语名，如 <code>Afdeling I</code></td></tr>
+              <tr><td><code>managed_area_ha</code></td><td class="type-float">float</td><td>管理面积（ha）</td></tr>
+              <tr><td><code>is_active</code></td><td class="type-bool">bool</td><td></td></tr>
+              <tr><td><code>external_id / source / remark</code></td><td class="type-str">str</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- dim_blok -->
+        <div class="entity-card" style="grid-column: 1 / -1">
+          <div class="entity-head">
+            <div class="entity-badge" style="background:#f87171"></div>
+            <h3>地块 / Blok</h3>
+            <code>dim_blok</code>
+            <span style="margin-left:auto;font-size:12px;color:var(--muted)">最小铲果单元 · 唯一约束：site_code + division_code + code</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:220px">字段</th>
+                <th style="width:70px">类型</th>
+                <th style="width:120px">SAP 来源</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 主键 & FK -->
+              <tr><td><span class="pk-badge">PK</span><code>id</code></td><td class="type-int">int</td><td></td><td>主键</td></tr>
+              <tr><td><span class="red-badge">冗余</span><code>company_code</code></td><td class="type-str">str</td><td><span class="sap-badge">BUKRS</span></td><td>→ dim_company（冗余，方便直接聚合到公司级）</td></tr>
+              <tr><td><span class="fk-badge">FK</span><code>site_code</code></td><td class="type-str">str</td><td><span class="sap-badge">ESTNR</span></td><td>→ dim_site.code</td></tr>
+              <tr><td><span class="fk-badge">FK</span><code>division_code</code></td><td class="type-str">str</td><td><span class="sap-badge">DIVNR</span></td><td>→ dim_division.code</td></tr>
+              <tr><td><span class="uk-badge">UK</span><code>code</code></td><td class="type-str">str</td><td><span class="sap-badge">BLOCK</span></td><td>地块编码，在小区内唯一</td></tr>
+
+              <!-- 已确认字段 -->
+              <tr class="section-divider"><td colspan="4"><span class="confirmed-badge">✓ 已确认</span> 业务已明确需要的字段</td></tr>
+
+              <tr><td><span class="confirmed-badge">✓</span><code>luas_ha</code></td><td class="type-float">float</td><td></td><td>地块面积（ha）</td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>planting_year</code></td><td class="type-int">int</td><td><span class="sap-badge">INITL → 年份</span></td><td>种植年份，如 <code>2018</code>；SAP 存 YYYYMM，取年份部分</td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>palm_count</code></td><td class="type-int">int</td><td><span class="sap-badge">TPALM</span></td><td>棕榈棵数（树的数量）</td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>soil_type</code></td><td class="type-str">str</td><td><span class="sap-badge">LNTYP</span></td><td>土地等级/类型：<code>PEAT</code>（泥炭）| <code>MINERAL</code>（矿质土）</td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>maturity_stage</code></td><td class="type-str">str</td><td><span class="sap-badge">PHASE</span></td><td>当前成熟阶段：<code>immature</code> | <code>young_mature</code> | <code>tm</code> | <code>scout</code></td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>sph</code></td><td class="type-float">float</td><td></td><td>株距密度（株/公顷 Stems Per Hectare）</td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>is_active</code></td><td class="type-bool">bool</td><td></td><td>是否在产/有效</td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>external_id</code></td><td class="type-str">str</td><td><span class="sap-badge">BLOCK</span></td><td>SAP 地块编码（用于数据源同步对照）</td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>source / remark</code></td><td class="type-str">str</td><td></td><td>数据来源 / 备注</td></tr>
+              <tr><td><span class="confirmed-badge">✓</span><code>created_at / updated_at</code></td><td class="type-str">datetime</td><td></td><td>审计时间</td></tr>
+
+              <!-- 待确认字段 -->
+              <tr class="section-divider"><td colspan="4"><span class="pending-badge">待确认</span> 需与业务部门确认是否需要</td></tr>
+
+              <tr><td><span class="pending-badge">?</span><code>block_alias</code></td><td class="type-str">str</td><td><span class="sap-badge">BNAME</span></td><td>地块别名（现场叫法，如 N09、O15），与 code 不同</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>block_type</code></td><td class="type-str">str</td><td><span class="sap-badge">BTYPE</span></td><td>地块性质：<code>INTI</code>（自有）| <code>PLASMA</code>（外包农户）</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>topography</code></td><td class="type-str">str</td><td><span class="sap-badge">TPGRP</span></td><td>地形：<code>FLAT</code> | <code>ROLLING</code> | <code>HILLY</code></td></tr>
+              <tr><td><span class="pending-badge">?</span><code>seed_variety</code></td><td class="type-str">str</td><td><span class="sap-badge">SEEDO</span></td><td>种子品种来源，如 SOCFINDO、DAMI 等</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>has_hgu</code></td><td class="type-bool">bool</td><td><span class="sap-badge">HGU</span></td><td>是否有 HGU 地权证（法律合规相关）</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>valid_from / valid_to</code></td><td class="type-str">date</td><td><span class="sap-badge">KDATB/KDATE</span></td><td>地块记录有效期（地块合并/注销时使用）</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>planting_ym</code></td><td class="type-str">str</td><td><span class="sap-badge">INITL</span></td><td>种植年月 YYYYMM（比年份更精确，如 201105）</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>scout_start_ym</code></td><td class="type-str">str</td><td><span class="sap-badge">SCOUT</span></td><td>进入勘探期年月 YYYYMM</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>mature_start_ym</code></td><td class="type-str">str</td><td><span class="sap-badge">MATRE</span></td><td>进入成熟期年月 YYYYMM（从此时起计入产量目标）</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>replanting_count</code></td><td class="type-int">int</td><td><span class="sap-badge">RPLNT</span></td><td>重种次数（0=原始种植）；重种后产量特征不同</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>sub_group</code></td><td class="type-str">str</td><td><span class="sap-badge">SUBGRP</span></td><td>子集团分组（如 S3），如有集团内分组管理需求</td></tr>
+              <tr><td><span class="pending-badge">?</span><code>land_status</code></td><td class="type-str">str</td><td><span class="sap-badge">LANDS</span></td><td>土地状态（具体含义待业务确认）</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 设计决策 ── -->
+  <section class="section" id="decisions">
+    <div class="section-head">
+      <h2>设计决策说明</h2>
+    </div>
+    <div class="section-body">
+      <div class="decisions">
+
+        <div class="decision">
+          <h4>① 工厂直接挂在公司下，不挂在园区下</h4>
+          <p>工厂（POM/KCP/精炼）是独立法人实体，可能同时接收多个园区的 FFB。如果挂在园区下，会造成逻辑错误——例如七园的工厂也处理八园的果。正确结构：<code>公司 → 工厂</code>，DWD 事实表里用 <code>site</code>（来源园区）和 <code>factory_site</code>（工厂所在地）分别记录。</p>
+        </div>
+
+        <div class="decision">
+          <h4>② company_code 冗余向下复制到每一层</h4>
+          <p><code>dim_division</code> 和 <code>dim_blok</code> 都直接存一份 <code>company_code</code>。这是数据仓库的标准做法（反范式化），避免每次查询都 JOIN 到顶层公司表。例如查"某公司所有小区的出勤率"，直接 <code>WHERE company_code = 'GIN'</code>，无需三层 JOIN。</p>
+        </div>
+
+        <div class="decision">
+          <h4>③ 地块静态信息放 DIM，动态信息放 DWD</h4>
+          <p>
+            放 <code>dim_blok</code>（变化慢，每季度/年才改）：<code>luas_ha</code>、<code>planting_year</code>、<code>maturity_stage</code>、<code>palm_count</code>、<code>sph</code>、<code>soil_type</code><br/>
+            放 <code>dwd_agri_harvest_rotation_monthly</code>（每月变化）：<code>current_days_since_harvest</code>、<code>mtd_harvested_ha</code>、<code>harvest_round_count</code>
+          </p>
+        </div>
+
+        <div class="decision">
+          <h4>④ DWD 事实表存字符串代码，不存外键</h4>
+          <p>事实表（如 <code>dwd_agri_harvest_daily</code>）里的 <code>site</code>、<code>division</code>、<code>blok</code> 存字符串代码，而非整型外键。这是 Kimball 维度建模的标准做法——数仓查询走 JOIN，不走数据库 FK 约束，保持事实表的独立性和加载灵活性。</p>
+        </div>
+
+        <div class="decision">
+          <h4>⑤ 数据来源字段（source）</h4>
+          <p>每张 DIM 表都有 <code>source</code> 字段，值为 <code>manual</code>（手动维护）或 <code>sync</code>（从 SAP/外部数据源同步）。同步来的记录通过 <code>external_id</code> 与外部系统对应，更新时以 <code>code</code> 为主键做 upsert，不重复创建。</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DIM vs DWD ── -->
+  <section class="section" id="dim-vs-dwd">
+    <div class="section-head">
+      <h2>DIM 层 vs DWD 层：哪些信息放哪里</h2>
+    </div>
+    <div class="section-body">
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-head dim">DIM 主数据层 — 静态描述信息</div>
+          <div class="compare-body">
+            <ul style="list-style:none;padding:0">
+              <li>✓ 地块面积 <code>luas_ha</code></li>
+              <li>✓ 种植年份 <code>planting_year</code></li>
+              <li>✓ 成熟阶段 <code>maturity_stage</code></li>
+              <li>✓ 棕榈棵数 <code>palm_count</code></li>
+              <li>✓ 株距密度 <code>sph</code></li>
+              <li>✓ 工厂产能 <code>capacity_ton_per_hour</code></li>
+              <li>✓ 小区管理面积 <code>managed_area_ha</code></li>
+              <li style="margin-top:8px;color:#94a3b8">— 这些信息每季度/年才会变化</li>
+            </ul>
+          </div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-head dwd">DWD 事实层 — 动态每日/每月数据</div>
+          <div class="compare-body">
+            <ul style="list-style:none;padding:0">
+              <li>✓ 当日铲果产量 <code>actual_kg</code></li>
+              <li>✓ 月累计产量 <code>mtd_actual_kg</code></li>
+              <li>✓ 当前距上次铲果天数</li>
+              <li>✓ 本月累计铲果面积</li>
+              <li>✓ 当日出勤人数</li>
+              <li>✓ 当日降雨量</li>
+              <li>✓ 当日施肥完成量</li>
+              <li style="margin-top:8px;color:#94a3b8">— 这些信息每天/每月更新</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+<footer>数据中台门户 · 主数据设计文档 · 确认后再实现</footer>
+</body>
+</html>

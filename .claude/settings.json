@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ping -n 3 127.0.0.1)",
+      "Bash(curl -s http://127.0.0.1:8000/api/health)",
+      "Bash(python -c \"from app.api.index_mgmt import router; print\\('OK'\\)\")",
+      "Bash(python -c \"from app.main import app; print\\('All imports OK'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/auth/login -H \"Content-Type: application/json\" -d \"{\\\\\"username\\\\\":\\\\\"admin\\\\\",\\\\\"password\\\\\":\\\\\"admin123\\\\\"}\")",
+      "Bash(curl -s -X PUT http://127.0.0.1:8000/api/sub-metrics/3 -H \"Content-Type: application/json\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc4MDU3MzU1Nn0.cCovG4jBiqHB3KJyYDoOnhL_O4NBX98oNLoEoU4HxqA\" -d \"{\\\\\"code\\\\\":\\\\\"chanl\\\\\",\\\\\"name\\\\\":\\\\\"产量\\\\\",\\\\\"unit\\\\\":\\\\\"吨\\\\\",\\\\\"source_type\\\\\":\\\\\"db_sync\\\\\",\\\\\"fixed_value\\\\\":null,\\\\\"sort_order\\\\\":0}\")",
+      "Bash(curl -s -X PUT \"http://127.0.0.1:8000/api/sub-metrics/3\" -H \"Content-Type: application/json; charset=utf-8\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc4MDU3MzU1Nn0.cCovG4jBiqHB3KJyYDoOnhL_O4NBX98oNLoEoU4HxqA\" --data-ascii \"{\\\\\"code\\\\\":\\\\\"test\\\\\",\\\\\"name\\\\\":\\\\\"test\\\\\",\\\\\"unit\\\\\":\\\\\"ton\\\\\",\\\\\"source_type\\\\\":\\\\\"db_sync\\\\\",\\\\\"fixed_value\\\\\":null,\\\\\"sort_order\\\\\":0}\")"
+    ]
+  }
+}

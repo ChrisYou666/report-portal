@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: report-portal-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: portal
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-portal_dev_password}"
+      POSTGRES_DB: report_portal
+      TZ: Asia/Jakarta
+    ports:
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data

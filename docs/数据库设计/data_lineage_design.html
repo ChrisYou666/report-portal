@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>数据追踪与质量设计</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1f2933;--muted:#64748b;--line:#d9dee7;--head:#edf3f8;--accent:#1b6b5f;--warn:#c98a1c;--danger:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","Segoe UI",Arial,sans-serif;font-size:14px;line-height:1.6}
+header{position:sticky;top:0;z-index:10;background:var(--panel);border-bottom:1px solid var(--line);padding:16px 28px}
+h1{margin:0;font-size:22px}
+.subtitle{color:var(--muted);font-size:13px;margin-top:2px}
+nav{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+nav a{color:var(--accent);text-decoration:none;border:1px solid #b7cbc7;background:#f0f7f5;padding:5px 10px;border-radius:5px;font-size:13px;font-weight:600}
+main{padding:20px 28px 60px;max-width:1100px;margin:0 auto}
+.section{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:18px;overflow:hidden}
+.sec-head{padding:14px 18px;border-bottom:1px solid var(--line);background:#fbfcfd}
+.sec-head h2{margin:0;font-size:17px}
+.sec-head .note{color:var(--muted);font-size:12px;margin-top:3px}
+.body{padding:16px 20px}
+.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt th,.dt td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.dt thead th{background:var(--head);font-weight:700;white-space:nowrap}
+.dt tbody tr:hover td{background:#f8faff}
+.mono{font-family:monospace;font-size:12px}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px}
+.badge-file{background:#dbeafe;color:#1e40af}
+.badge-manual{background:#dcfce7;color:#15803d}
+.badge-sync{background:#fef3c7;color:#92400e}
+pre{background:#1e293b;color:#e2e8f0;border-radius:6px;padding:14px 16px;overflow-x:auto;font-size:12px;line-height:1.7;margin:10px 0}
+pre .c{color:#64748b}
+pre .k{color:#7dd3fc}
+pre .s{color:#86efac}
+pre .f{color:#fbbf24}
+.alert{border-radius:6px;padding:10px 14px;margin:10px 0;font-size:13px}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+.alert-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.step-list{list-style:none;padding:0;margin:0}
+.step-list li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.step-list li:last-child{border-bottom:none}
+.step-no{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-top:2px}
+.tag-ok{background:#dcfce7;color:#15803d;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.tag-warn{background:#fef3c7;color:#92400e;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.tag-err{background:#fee2e2;color:#b91c1c;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.tag-skip{background:#f1f5f9;color:#64748b;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <h1>数据追踪与质量设计</h1>
+  <div class="subtitle">说明数据从哪来、谁改过、质量怎么检查 &nbsp;|&nbsp; ETL 日志系统暂不纳入</div>
+  <nav>
+    <a href="#flow">数据流向</a>
+    <a href="#source">来源追踪</a>
+    <a href="#quality">质量检查</a>
+    <a href="#query">追溯查询</a>
+  </nav>
+</header>
+<main>
+
+<!-- 1. 数据流向 -->
+<div class="section" id="flow">
+  <div class="sec-head">
+    <h2>1. 数据流向</h2>
+    <div class="note">ODS → DIM → DWS，每一步追踪字段如何传递</div>
+  </div>
+  <div class="body">
+    <table class="dt">
+      <thead><tr><th>层</th><th>表</th><th>追踪字段</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>ODS</strong></td>
+          <td class="mono">upload_batches<br>upload_files<br>parsed_structured_records</td>
+          <td class="mono">batch_no, uploader<br>original_filename<br>id（source_record_id）</td>
+          <td>记录谁上传了什么文件，每条解析记录有唯一 ID</td>
+        </tr>
+        <tr>
+          <td><strong>DIM</strong></td>
+          <td class="mono">dim_company<br>dim_site / dim_division</td>
+          <td class="mono">company_code</td>
+          <td>将报表中的园区名映射为标准 code，同时带出 company_code</td>
+        </tr>
+        <tr style="background:#f0fdf4">
+          <td><strong>DWS ★</strong></td>
+          <td class="mono">dws_agri_harvest_daily<br>dws_factory_pom_daily …</td>
+          <td class="mono">company_code<br>source_batch_ids<br>source_type<br>quality_status<br>quality_message<br>created_at / updated_at</td>
+          <td>每行数据携带完整追踪信息，可向上追溯至 ODS 批次</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2. 来源追踪 -->
+<div class="section" id="source">
+  <div class="sec-head">
+    <h2>2. 来源追踪</h2>
+    <div class="note">三种数据录入方式，追踪方式不同</div>
+  </div>
+  <div class="body">
+    <table class="dt">
+      <thead>
+        <tr><th>来源类型</th><th>source_type</th><th>source_batch_ids</th><th>触发写入方式</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-file">文件上传</span></td>
+          <td class="mono">file_upload</td>
+          <td class="mono">["B2025060301"]</td>
+          <td>上传 Excel → 解析 → 写 DWS，可追溯到原始文件</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-manual">手动录入</span></td>
+          <td class="mono">manual_entry</td>
+          <td class="mono">[]（空）</td>
+          <td>网页表单直接录入，无批次来源，通过 updated_at 知道什么时候录的</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-sync">外部同步</span></td>
+          <td class="mono">external_sync</td>
+          <td class="mono">[]（空）</td>
+          <td>从 SAP / 外部数据库同步，通过 DataSourceConfig 配置</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-warn" style="margin-top:12px">
+      <strong>覆盖优先级：</strong>同一行数据（同日期+公司+园区+小区）有多个来源时，<br>
+      <code>file_upload</code> 覆盖 <code>manual_entry</code>（文件解析的比手录的更可信）；<br>
+      <code>external_sync</code> 是否覆盖由各表业务决定，需配置后明确。
+    </div>
+
+    <h3 style="font-size:14px;margin-top:18px">DWS 公共追踪列</h3>
+    <table class="dt">
+      <thead><tr><th>列名</th><th>类型</th><th>说明</th><th>示例</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">company_code</td><td>varchar(40)</td><td>公司代码，冗余自 dim_company</td><td class="mono">"PTSI"</td></tr>
+        <tr><td class="mono">source_batch_ids</td><td>text（JSON）</td><td>来源批次号数组，可追溯到 upload_batches</td><td class="mono">["B2025060301"]</td></tr>
+        <tr><td class="mono">source_type</td><td>varchar(20)</td><td>来源类型</td><td class="mono">"file_upload"</td></tr>
+        <tr><td class="mono">quality_status</td><td>varchar(20)</td><td>质量标记：ok / warning / error</td><td class="mono">"warning"</td></tr>
+        <tr><td class="mono">quality_message</td><td>text</td><td>质量问题说明</td><td class="mono">"OE% 超出正常范围：35.2%"</td></tr>
+        <tr><td class="mono">created_at</td><td>timestamp</td><td>首次写入时间</td><td class="mono">"2025-06-03 09:12"</td></tr>
+        <tr><td class="mono">updated_at</td><td>timestamp</td><td>最后更新时间，UPSERT 时自动刷新</td><td class="mono">"2025-06-03 10:30"</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 3. 质量检查 -->
+<div class="section" id="quality">
+  <div class="sec-head">
+    <h2>3. 质量检查规则</h2>
+    <div class="note">数据写入 DWS 时自动执行，结果写入 quality_status / quality_message</div>
+  </div>
+  <div class="body">
+
+    <p style="color:var(--muted);margin-top:0">检查分三类，按严重程度设 error / warning / ok：</p>
+
+    <h3 style="font-size:14px">① 格式检查（解析阶段，所有表通用）</h3>
+    <table class="dt">
+      <thead><tr><th>检查项</th><th>规则</th><th>结果</th></tr></thead>
+      <tbody>
+        <tr><td>日期字段</td><td>必须是合法日期，且不能是未来日期</td><td><span class="tag-err">error</span></td></tr>
+        <tr><td>园区/小区名</td><td>必须存在于 dim_site / dim_division</td><td><span class="tag-warn">warning</span>（新园区可能未录入）</td></tr>
+        <tr><td>数值字段</td><td>不能是文字（如 "N/A"、"-"），解析后为 null 的记录要标注</td><td><span class="tag-warn">warning</span></td></tr>
+        <tr><td>必填字段</td><td>report_date、company_code、site 不能为空</td><td><span class="tag-err">error</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:14px;margin-top:16px">② 数值范围检查（按业务表，可配置）</h3>
+    <table class="dt">
+      <thead><tr><th>表</th><th>字段</th><th>正常范围</th><th>结果</th></tr></thead>
+      <tbody>
+        <tr><td>铲果产量</td><td>daily_actual_kg</td><td>≥ 0，单小区日产量通常 &lt; 500,000 kg</td><td><span class="tag-warn">warning</span></td></tr>
+        <tr><td>铲果产量</td><td>mtd_actual_kg ≥ daily_actual_kg</td><td>MTD 不能小于当日产量</td><td><span class="tag-err">error</span>（逻辑错误）</td></tr>
+        <tr><td>铲果产量</td><td>bbc_achievement_pct</td><td>0% ~ 200%，超出可能是 BBC 填 0 导致</td><td><span class="tag-warn">warning</span></td></tr>
+        <tr><td>出勤</td><td>h_attendance_pct / m_attendance_pct</td><td>0% ~ 100%</td><td><span class="tag-err">error</span></td></tr>
+        <tr><td>POM 生产</td><td>daily_cpo_oe_pct（OE%）</td><td>18% ~ 28%（正常出油率范围）</td><td><span class="tag-warn">warning</span></td></tr>
+        <tr><td>POM 生产</td><td>daily_cpo_ffa_pct（FFA%）</td><td>0% ~ 15%</td><td><span class="tag-warn">warning</span></td></tr>
+        <tr><td>KCP 生产</td><td>daily_pko_extraction_pct</td><td>40% ~ 55%</td><td><span class="tag-warn">warning</span></td></tr>
+        <tr><td>精炼</td><td>daily_yield_pct（得率）</td><td>85% ~ 100%</td><td><span class="tag-warn">warning</span></td></tr>
+        <tr><td>出勤率</td><td>rainfall_mm（日降雨）</td><td>0 ~ 200 mm，超出疑似单位错误（mm vs cm）</td><td><span class="tag-warn">warning</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:14px;margin-top:16px">③ 完整性检查（批次级别）</h3>
+    <table class="dt">
+      <thead><tr><th>检查项</th><th>规则</th><th>结果</th></tr></thead>
+      <tbody>
+        <tr><td>小区覆盖</td><td>本月已有 N 个小区有数据，本次上传只有 M 个（M &lt; N），疑似漏报</td><td><span class="tag-warn">warning</span>，标注缺失的小区名</td></tr>
+        <tr><td>工厂数据完整性</td><td>POM 有今日数据但无 MTD 数据（两者应同时存在）</td><td><span class="tag-warn">warning</span></td></tr>
+        <tr><td>日期连续性</td><td>同一园区跳过某几天没有数据（如 6/1 有，6/3 有，6/2 缺）</td><td><span class="tag-warn">warning</span>（仅提示，不阻断）</td></tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-info" style="margin-top:14px">
+      <strong>quality_status 写入逻辑：</strong><br>
+      任何一项 error 检查失败 → <code>error</code>（数据不可信，前端展示红色标记）<br>
+      有 warning 但无 error → <code>warning</code>（数据可用但需关注，前端展示黄色）<br>
+      全部通过 → <code>ok</code>（正常展示）<br><br>
+      <strong>error 不阻断写入</strong>，数据仍然写入 DWS，但前端查询时可过滤掉 error 行，避免影响汇总统计。
+    </div>
+
+    <h3 style="font-size:14px;margin-top:16px">实现位置（代码层面）</h3>
+    <ul class="step-list">
+      <li>
+        <div class="step-no">1</div>
+        <div>
+          <strong>解析后（parse_file 之后）</strong> — 格式检查<br>
+          <span style="color:var(--muted)">在 parser.py 的 load_dwd_records() 内，每条记录写入前做格式和必填校验，结果写到 DWD 的 quality_status</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-no">2</div>
+        <div>
+          <strong>写入 DWS 时</strong> — 数值范围检查 + 逻辑一致性检查<br>
+          <span style="color:var(--muted)">DWS ETL 函数计算完派生指标后，对照范围规则校验，结果写到 DWS 的 quality_status / quality_message</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-no">3</div>
+        <div>
+          <strong>批次完成后</strong> — 完整性检查<br>
+          <span style="color:var(--muted)">整个批次解析完成后，对比本月已有数据检查小区是否有遗漏，结果写到 upload_batches.remark 或独立展示</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- 4. 追溯查询 -->
+<div class="section" id="query">
+  <div class="sec-head">
+    <h2>4. 追溯查询示例</h2>
+    <div class="note">给定一条 DWS 数据，如何找到它的来源和质量问题</div>
+  </div>
+  <div class="body">
+
+    <h3 style="font-size:14px;margin-top:0">查某行数据的来源批次和质量</h3>
+    <pre><span class="c">-- 查铲果产量 DWS 数据，同时看来源和质量</span>
+<span class="k">SELECT</span>
+    report_date, company_code, site, division,
+    daily_actual_kg, mtd_actual_kg,
+    bbc_achievement_pct,
+    source_batch_ids,       <span class="c">-- ["B2025060301"]</span>
+    source_type,            <span class="c">-- "file_upload"</span>
+    quality_status,         <span class="c">-- "warning"</span>
+    quality_message,        <span class="c">-- "BBC目标为0，完成率无法计算"</span>
+    updated_at
+<span class="k">FROM</span> dws_agri_harvest_daily
+<span class="k">WHERE</span> report_date = <span class="s">'2025-06-03'</span>
+  <span class="k">AND</span> company_code = <span class="s">'PTSI'</span>;
+
+<span class="c">-- 用 source_batch_ids 追溯到原始文件</span>
+<span class="k">SELECT</span>
+    b.batch_no, b.report_name,
+    b.uploader, b.created_at <span class="k">AS</span> upload_time,
+    f.original_filename
+<span class="k">FROM</span> upload_batches b
+<span class="k">JOIN</span> upload_files f <span class="k">ON</span> f.batch_id = b.id
+<span class="k">WHERE</span> b.batch_no = <span class="s">'B2025060301'</span>;</pre>
+
+    <h3 style="font-size:14px;margin-top:16px">查今天所有质量异常的数据</h3>
+    <pre><span class="c">-- 汇总今日所有警告和错误</span>
+<span class="k">SELECT</span>
+    <span class="s">'dws_agri_harvest_daily'</span> <span class="k">AS</span> table_name,
+    site, division,
+    quality_status, quality_message,
+    source_type, updated_at
+<span class="k">FROM</span> dws_agri_harvest_daily
+<span class="k">WHERE</span> report_date = <span class="f">CURRENT_DATE</span>
+  <span class="k">AND</span> quality_status != <span class="s">'ok'</span>
+
+<span class="k">UNION ALL</span>
+
+<span class="k">SELECT</span>
+    <span class="s">'dws_factory_pom_daily'</span>,
+    site, <span class="s">''</span>,
+    quality_status, quality_message,
+    source_type, updated_at
+<span class="k">FROM</span> dws_factory_pom_daily
+<span class="k">WHERE</span> report_date = <span class="f">CURRENT_DATE</span>
+  <span class="k">AND</span> quality_status != <span class="s">'ok'</span>
+
+<span class="k">ORDER BY</span> quality_status <span class="k">DESC</span>, updated_at <span class="k">DESC</span>;</pre>
+
+    <h3 style="font-size:14px;margin-top:16px">查手动录入的数据</h3>
+    <pre><span class="c">-- 审计最近 7 天手动录入的记录</span>
+<span class="k">SELECT</span>
+    report_date, company_code, site, division,
+    daily_actual_kg,
+    updated_at <span class="k">AS</span> entry_time
+<span class="k">FROM</span> dws_agri_harvest_daily
+<span class="k">WHERE</span> source_type = <span class="s">'manual_entry'</span>
+  <span class="k">AND</span> updated_at >= <span class="f">NOW</span>() - <span class="k">INTERVAL</span> <span class="s">'7 days'</span>
+<span class="k">ORDER BY</span> updated_at <span class="k">DESC</span>;</pre>
+  </div>
+</div>
+
+<div style="color:#94a3b8;font-size:12px;text-align:center;margin-top:20px">
+  更新时间：2026-06-03 &nbsp;|&nbsp; 数据追踪设计 v1.1 &nbsp;|&nbsp; ETL 日志系统暂不纳入
+</div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,1393 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>DWS 层宽表设计</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1f2933;--muted:#64748b;--line:#d9dee7;--head:#edf3f8;--accent:#1b6b5f;--accent2:#c98a1c;--agri:#1b6b5f;--factory:#1d4ed8;--new:#7c3aed}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","Segoe UI",Arial,sans-serif;font-size:14px;line-height:1.6}
+header{position:sticky;top:0;z-index:10;background:var(--panel);border-bottom:1px solid var(--line);padding:16px 28px}
+h1{margin:0;font-size:22px}
+.subtitle{color:var(--muted);font-size:13px;margin-top:2px}
+nav{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+nav a{color:var(--accent);text-decoration:none;border:1px solid #b7cbc7;background:#f0f7f5;padding:5px 10px;border-radius:5px;font-size:13px;font-weight:600}
+main{padding:20px 28px 60px;max-width:1400px;margin:0 auto}
+.overview{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kv{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.kv .label{color:var(--muted);font-size:12px}
+.kv .value{font-size:26px;font-weight:700;color:var(--accent);margin-top:4px}
+.layer-flow{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:0;overflow-x:auto}
+.layer-box{border:2px solid var(--line);border-radius:6px;padding:10px 18px;text-align:center;min-width:110px;font-weight:600;font-size:13px}
+.layer-box.ods{border-color:#64748b;background:#f8fafc;color:#64748b}
+.layer-box.dim{border-color:#0369a1;background:#eff6ff;color:#0369a1}
+.layer-box.dwd{border-color:#d97706;background:#fffbeb;color:#d97706}
+.layer-box.dws{border-color:var(--accent);background:#f0fdf4;color:var(--accent);border-width:3px}
+.layer-box.ads{border-color:#7c3aed;background:#f5f3ff;color:#7c3aed}
+.arrow{font-size:22px;color:var(--muted);padding:0 8px}
+.section{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:18px;overflow:hidden}
+.sec-head{padding:14px 18px;border-bottom:1px solid var(--line);background:#fbfcfd;display:flex;align-items:center;gap:10px}
+.sec-head h2{margin:0;font-size:17px}
+.sec-head .note{color:var(--muted);font-size:12px;margin-left:auto}
+.dept-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;color:#fff}
+.badge-agri{background:var(--agri)}
+.badge-factory{background:var(--factory)}
+.tbl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;padding:16px}
+.tbl-card{border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.tbl-card-head{padding:10px 14px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--line)}
+.tbl-card-head .tname{font-weight:700;font-size:14px;font-family:monospace;color:var(--ink)}
+.tbl-card-head .grain{color:var(--muted);font-size:11px;margin-top:2px}
+.tbl-card-head .src{color:var(--muted);font-size:11px}
+.field-list{padding:10px 14px}
+.fg{margin-bottom:8px}
+.fg-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.field-row{display:flex;gap:6px;align-items:baseline;padding:2px 0;border-bottom:1px solid #f1f5f9;font-size:12px}
+.field-row:last-child{border-bottom:none}
+.fname{font-family:monospace;color:#1e40af;min-width:180px;flex-shrink:0}
+.ftype{color:var(--muted);font-size:11px;min-width:55px}
+.fdesc{color:#374151}
+.derived{background:#fef9c3;padding:0 4px;border-radius:3px;font-size:10px;color:#92400e;font-weight:600;margin-left:4px}
+.src-tag{background:#f0f7f5;border:1px solid #b7cbc7;color:var(--accent);font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-left:4px}
+.summary-table{width:100%;border-collapse:collapse}
+.summary-table th,.summary-table td{border:1px solid var(--line);padding:8px 10px;text-align:left;font-size:13px}
+.summary-table thead th{background:var(--head);font-weight:700;white-space:nowrap}
+.summary-table tbody tr:hover td{background:#f8faff}
+.mono{font-family:monospace;font-size:12px}
+.principle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px}
+.principle{border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.principle strong{display:block;margin-bottom:4px;color:var(--accent)}
+.principle p{margin:0;color:var(--muted);font-size:12px}
+/* Filter bar */
+.filter-bar{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:18px}
+.filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.filter-row:last-child{margin-bottom:0}
+.filter-label{font-size:12px;font-weight:700;color:var(--muted);min-width:48px;flex-shrink:0}
+.fb{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:4px 12px;border-radius:16px;font-size:12px;cursor:pointer;transition:all .15s;font-family:inherit}
+.fb:hover{border-color:#94a3b8;background:#f1f5f9}
+.fb.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb-factory.active{background:var(--factory);border-color:var(--factory)}
+.filter-count{margin-left:auto;font-size:12px;color:var(--muted)}
+.tbl-card.hidden{display:none}
+.section-empty{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>DWS 层宽表设计文档</h1>
+  <div class="subtitle">汇总层（Data Warehouse Summary）— 基于 DWD 聚合计算，直接驱动报表展示</div>
+  <nav>
+    <a href="#overview">概览</a>
+    <a href="#principles">设计原则</a>
+    <a href="#summary">表清单</a>
+    <a href="#agri">农业 DWS</a>
+    <a href="#factory">工厂 DWS</a>
+  </nav>
+</header>
+<main>
+
+<!-- 概览 -->
+<div class="overview" id="overview">
+  <div class="kv"><div class="label">DWS 表数量</div><div class="value">28</div></div>
+  <div class="kv"><div class="label">农业模块</div><div class="value">20</div></div>
+  <div class="kv"><div class="label">工厂模块</div><div class="value">8</div></div>
+  <div class="kv"><div class="label">覆盖报表</div><div class="value">27</div></div>
+  <!-- filter count updated by JS -->
+</div>
+
+<!-- 数据流向 -->
+<div class="layer-flow">
+  <div class="layer-box ods">ODS<br><small>原始上传</small></div>
+  <div class="arrow">→</div>
+  <div class="layer-box dim">DIM<br><small>主数据</small></div>
+  <div class="arrow">→</div>
+  <div class="layer-box dws">DWS ★<br><small>汇总宽表<br>23 张宽表</small></div>
+  <div class="arrow">→</div>
+  <div class="layer-box ads">ADS<br><small>应用展示</small></div>
+  <div style="margin-left:28px;border-left:3px dashed #cbd5e1;padding-left:14px;color:#94a3b8;font-size:12px;align-self:center;flex-shrink:0">
+    <div style="font-weight:700;color:#64748b;margin-bottom:3px">DWD（规范化明细层）</div>
+    <div>24 张窄表已设计完成</div>
+    <div>业务稳定后再补充实现</div>
+  </div>
+</div>
+
+<!-- 设计原则 -->
+<div class="section" id="principles">
+  <div class="sec-head"><h2>设计原则</h2></div>
+  <div class="principle-grid">
+    <div class="principle">
+      <strong>① 宽表优先，一表对一报</strong>
+      <p>每张 DWS 表对应一张业务报表。所有维度字段 + 指标字段放同一行，前端展示无需 JOIN。</p>
+    </div>
+    <div class="principle">
+      <strong>② 派生指标在此计算</strong>
+      <p>完成率、出油率、损失率等派生指标由 DWS ETL 计算并存储，ADS/前端直接读取。</p>
+    </div>
+    <div class="principle">
+      <strong>③ 窄表透视为宽列</strong>
+      <p>DWD 的 work_type / period_type / chemical_code 等维度列，在 DWS 展开为独立列（pruning_ha / daily_cpo_kg 等）。</p>
+    </div>
+    <div class="principle">
+      <strong>④ 今日 + MTD 同行</strong>
+      <p>工厂生产表将 DWD 的 today/monthly 两行合并为一行，daily_* 和 mtd_* 前缀区分周期。</p>
+    </div>
+    <div class="principle">
+      <strong>⑤ 粒度与报表对齐</strong>
+      <p>粒度由报表决定（日×园区×小区 / 日×工厂 / 月×园区×地块），不随意升维或降维。</p>
+    </div>
+    <div class="principle">
+      <strong>⑥ 刷新策略：全量替换</strong>
+      <p>每次 ETL 按 (report_date, site, …) 做 UPSERT，不追加历史。DWD 是权威来源，DWS 可重算。</p>
+    </div>
+  </div>
+</div>
+
+<!-- 公共列说明 -->
+<div class="section">
+  <div class="sec-head"><h2>公共基础列（所有 DWS 表均包含）</h2></div>
+  <div style="overflow:auto;padding:0 4px">
+  <table class="summary-table" style="margin:0">
+    <thead><tr><th>列名</th><th>类型</th><th>说明</th><th>备注</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">company_code</td><td>varchar(40)</td><td>公司代码，冗余自 DIM，支持跨公司数据隔离与查询</td><td>与 dim_company.code 对应</td></tr>
+      <tr><td class="mono">source_batch_ids</td><td>text（JSON）</td><td>来源批次号列表，如 ["B2025060301"]，可追溯至原始上传文件</td><td>手动录入时为 []</td></tr>
+      <tr><td class="mono">source_type</td><td>varchar(20)</td><td>数据来源：file_upload / manual_entry / external_sync</td><td>区分录入方式</td></tr>
+      <tr><td class="mono">quality_status</td><td>varchar(20)</td><td>数据质量标记：ok / warning / error</td><td>由质量检查规则写入</td></tr>
+      <tr><td class="mono">quality_message</td><td>text</td><td>质量问题说明，quality_status=ok 时为空</td><td>如"OE%超出正常范围：35.2%"</td></tr>
+      <tr><td class="mono">created_at</td><td>timestamp</td><td>记录首次创建时间</td><td></td></tr>
+      <tr><td class="mono">updated_at</td><td>timestamp</td><td>记录最后更新时间，每次 UPSERT 自动刷新</td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- 表清单 -->
+<div class="section" id="summary">
+  <div class="sec-head"><h2>DWS 表清单</h2><span class="note">共 23 张</span></div>
+  <div style="overflow:auto">
+  <table class="summary-table">
+    <thead>
+      <tr><th>部门</th><th>业务模块</th><th>DWS 表名</th><th>粒度</th><th>来源 DWD 表</th><th>对应报表</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>铲果</td><td class="mono">dws_agri_harvest_daily</td><td>日×园区×小区</td><td class="mono">dwd_agri_harvest_daily<br>dwd_agri_production_target_monthly<br>dwd_agri_akp_density_daily</td><td>产量与目标完成统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>铲果</td><td class="mono">dws_agri_harvest_work_record</td><td>铲果单×园区</td><td class="mono">（新增 DWD 表）</td><td>铲果工作记录</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>铲果周期</td><td class="mono">dws_agri_rotation_monthly</td><td>月×园区×小区×地块</td><td class="mono">dwd_agri_harvest_rotation_monthly</td><td>Rotasi Panen 铲果周期</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>铲果周期</td><td class="mono">dws_agri_rotation_dist_daily</td><td>日×园区×小区</td><td class="mono">dwd_agri_harvest_rotation_dist_daily</td><td>铲果周期分布统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>铲果运输</td><td class="mono">dws_agri_transport_daily</td><td>送果单×日×园区（每车次一行）</td><td class="mono">dwd_agri_tbs_transport_daily</td><td>TBS送厂运输明细</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>铲果运输</td><td class="mono">dws_agri_transport_plan_daily</td><td>日×园区×小区</td><td class="mono">dwd_agri_harvest_plan_daily</td><td>当天铲果运输计划表</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>损失</td><td class="mono">dws_agri_harvest_loss_daily</td><td>检查×园区×小区×地块</td><td class="mono">dwd_agri_harvest_loss_daily</td><td>铲果损失检查表</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>出勤</td><td class="mono">dws_agri_attendance_daily</td><td>日×园区×小区×工种</td><td class="mono">dwd_agri_attendance_daily</td><td>养护工&amp;铲果工出勤统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>养护</td><td class="mono">dws_agri_maintenance_daily</td><td>日×园区×小区</td><td class="mono">dwd_agri_maintenance_daily</td><td>养护工作统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>养护</td><td class="mono">dws_agri_fertilization_daily</td><td>日×园区×小区</td><td class="mono">dwd_agri_fertilization_daily</td><td>施肥进度统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>养护</td><td class="mono">dws_agri_fertilizer_stock_daily</td><td>日×园区×物料×库位</td><td class="mono">dwd_agri_material_inventory_daily</td><td>化肥库存统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>养护</td><td class="mono">dws_agri_pesticide_stock_daily</td><td>日×园区×物料</td><td class="mono">dwd_agri_material_inventory_daily</td><td>园区农药库存统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>仓库</td><td class="mono">dws_agri_tool_stock_daily</td><td>日×园区×物料×库位</td><td class="mono">dwd_agri_material_inventory_daily</td><td>铲果工具每日库存监控</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>仓库</td><td class="mono">dws_agri_oil_tank_daily</td><td>日×园区×油罐编号</td><td class="mono">dwd_agri_oil_storage_daily</td><td>园区油库出油监控</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>机械</td><td class="mono">dws_agri_machinery_monthly</td><td>月×园区×设备</td><td class="mono">dwd_agri_equipment_fuel_monthly</td><td>机械HM和油耗监控</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>机械</td><td class="mono">dws_agri_equipment_daily</td><td>日×园区×设备</td><td class="mono">dwd_agri_equipment_daily</td><td>设备状态与维修跟踪（每日）</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>机械</td><td class="mono">dws_agri_equipment_repair</td><td>故障事件（每次一行）</td><td class="mono">dwd_agri_equipment_daily</td><td>设备状态与维修跟踪（故障）</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>苗区</td><td class="mono">dws_agri_seedling_daily</td><td>日×运苗园区×MRIS单号</td><td class="mono">dwd_agri_seedling_transport_daily</td><td>每日运苗情况统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>苗区</td><td class="mono">dws_agri_nursery_batch</td><td>园区×苗批次</td><td class="mono">dwd_agri_nursery_batch（待建）</td><td>苗区统计</td></tr>
+      <tr><td><span class="dept-badge badge-agri">农业</span></td><td>降雨</td><td class="mono">dws_agri_rainfall_daily</td><td>日×园区</td><td class="mono">dwd_agri_rainfall_daily</td><td>降雨量日报</td></tr>
+      <tr><td><span class="dept-badge badge-factory">工厂</span></td><td>生产</td><td class="mono">dws_factory_pom_daily</td><td>日×工厂</td><td class="mono">dwd_factory_pom_production_daily</td><td>POM生产绩效指标</td></tr>
+      <tr><td><span class="dept-badge badge-factory">工厂</span></td><td>生产</td><td class="mono">dws_factory_kcp_daily</td><td>日×工厂</td><td class="mono">dwd_factory_kcp_production_daily</td><td>KCP生产绩效指标</td></tr>
+      <tr><td><span class="dept-badge badge-factory">工厂</span></td><td>生产</td><td class="mono">dws_factory_refinery_daily</td><td>日×工厂</td><td class="mono">dwd_factory_refinery_production_daily</td><td>精炼与包装生产绩效指标</td></tr>
+      <tr><td><span class="dept-badge badge-factory">工厂</span></td><td>分级</td><td class="mono">dws_factory_grading_daily</td><td>SPB×日×工厂（每车次一行）</td><td class="mono">dwd_factory_grading_daily</td><td>Laporan Gradding 分级报告</td></tr>
+      <tr><td><span class="dept-badge badge-factory">工厂</span></td><td>地磅</td><td class="mono">dws_factory_weighbridge_daily</td><td>票据×日×工厂（每票一行）</td><td class="mono">dwd_factory_weighbridge_daily</td><td>地磅单</td></tr>
+      <tr><td><span class="dept-badge badge-factory">工厂</span></td><td>库存</td><td class="mono">dws_factory_product_stock_daily</td><td>日×工厂×产品×储存位置×罐号</td><td class="mono">dwd_factory_product_inventory_daily</td><td>工厂产品库存统计表</td></tr>
+      <tr><td><span class="dept-badge badge-factory">工厂</span></td><td>库存</td><td class="mono">dws_factory_chemical_daily</td><td>日×工厂</td><td class="mono">dwd_factory_chemical_consumption_daily</td><td>工业药剂消耗</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- 筛选栏 -->
+<div class="filter-bar" id="filterBar">
+  <div class="filter-row">
+    <span class="filter-label">部门</span>
+    <button class="fb active" data-dept="">全部</button>
+    <button class="fb" data-dept="农业">农业</button>
+    <button class="fb fb-factory" data-dept="工厂">工厂</button>
+    <span class="filter-count" id="filterCount">显示 23 / 23 张表</span>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">模块</span>
+    <div id="moduleButtons" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<!-- 农业 DWS 详细字段 -->
+<div class="section" id="agri">
+  <div class="sec-head"><h2><span class="dept-badge badge-agri">农业</span> DWS 表字段设计</h2></div>
+  <div class="tbl-grid">
+
+    <!-- 1. dws_agri_harvest_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_harvest_daily</div>
+          <div class="grain">粒度：日 × 园区 × 小区</div>
+          <div class="src">来源：dwd_agri_harvest_daily + dwd_agri_production_target_monthly + dwd_agri_akp_density_daily（聚合）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">division</span><span class="ftype">varchar</span><span class="fdesc">小区</span></div>
+          <div class="field-row"><span class="fname">mature_area_ha</span><span class="ftype">float</span><span class="fdesc">成熟面积（ha）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">AKP 完成率</div>
+          <div class="field-row"><span class="fname">akp_density</span><span class="ftype">float</span><span class="fdesc">AKP 密度（采样）</span></div>
+          <div class="field-row"><span class="fname">akp_forecast_area_ha</span><span class="ftype">float</span><span class="fdesc">AKP 预计铲果面积</span></div>
+          <div class="field-row"><span class="fname">akp_forecast_kg</span><span class="ftype">float</span><span class="fdesc">AKP 预计产量（kg）</span></div>
+          <div class="field-row"><span class="fname">daily_actual_kg</span><span class="ftype">float</span><span class="fdesc">当日实际产量（kg）</span></div>
+          <div class="field-row"><span class="fname">daily_achievement_pct</span><span class="ftype">float</span><span class="fdesc">当日完成率<span class="derived">派生</span> = daily_actual / akp_forecast</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">BBC 完成率</div>
+          <div class="field-row"><span class="fname">mtd_actual_kg</span><span class="ftype">float</span><span class="fdesc">月累计实际产量（kg）</span></div>
+          <div class="field-row"><span class="fname">bbc_ton</span><span class="ftype">float</span><span class="fdesc">月度 BBC 目标（ton）</span></div>
+          <div class="field-row"><span class="fname">bbc_achievement_pct</span><span class="ftype">float</span><span class="fdesc">BBC 完成率<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">bbc_remaining_ton</span><span class="ftype">float</span><span class="fdesc">BBC 剩余目标<span class="derived">派生</span></span></div>
+        </div>
+        <div class="fg"><div class="fg-label">预算完成率</div>
+          <div class="field-row"><span class="fname">budget_ton</span><span class="ftype">float</span><span class="fdesc">月度预算产量（ton）</span></div>
+          <div class="field-row"><span class="fname">budget_achievement_pct</span><span class="ftype">float</span><span class="fdesc">预算完成率<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">budget_remaining_ton</span><span class="ftype">float</span><span class="fdesc">预算剩余目标<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">remaining_days_in_month</span><span class="ftype">int</span><span class="fdesc">月剩余天数<span class="derived">派生</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. dws_agri_attendance_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_attendance_daily</div>
+          <div class="grain">粒度：日 × 园区 × 小区 × 工种</div>
+          <div class="src">来源：dwd_agri_attendance_daily（直通，字段共用）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">division</span><span class="ftype">varchar</span><span class="fdesc">小区</span></div>
+          <div class="field-row"><span class="fname">worker_type</span><span class="ftype">varchar</span><span class="fdesc">工种：harvester（铲果工）/ maintenance（养护工）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">出勤指标（铲果工与养护工共用同一套字段）</div>
+          <div class="field-row"><span class="fname">managed_area_ha</span><span class="ftype">float</span><span class="fdesc">管理面积（ha）</span></div>
+          <div class="field-row"><span class="fname">required_count</span><span class="ftype">float</span><span class="fdesc">需求人数</span></div>
+          <div class="field-row"><span class="fname">own_total</span><span class="ftype">float</span><span class="fdesc">自有员工人数</span></div>
+          <div class="field-row"><span class="fname">contractor_total</span><span class="ftype">float</span><span class="fdesc">承包商人数</span></div>
+          <div class="field-row"><span class="fname">own_present</span><span class="ftype">float</span><span class="fdesc">自有出勤人数</span></div>
+          <div class="field-row"><span class="fname">contractor_present</span><span class="ftype">float</span><span class="fdesc">承包商出勤人数</span></div>
+          <div class="field-row"><span class="fname">total_present</span><span class="ftype">float</span><span class="fdesc">总出勤人数</span></div>
+          <div class="field-row"><span class="fname">attendance_pct</span><span class="ftype">float</span><span class="fdesc">出勤率<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">leave_count</span><span class="ftype">float</span><span class="fdesc">请假人数</span></div>
+          <div class="field-row"><span class="fname">annual_leave_count</span><span class="ftype">float</span><span class="fdesc">休假人数</span></div>
+          <div class="field-row"><span class="fname">sick_count</span><span class="ftype">float</span><span class="fdesc">病假人数</span></div>
+          <div class="field-row"><span class="fname">absent_count</span><span class="ftype">float</span><span class="fdesc">旷工人数</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. dws_agri_maintenance_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_maintenance_daily</div>
+          <div class="grain">粒度：日 × 园区 × 小区</div>
+          <div class="src">来源：dwd_agri_maintenance_daily（work_type 透视为宽列）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">division</span><span class="ftype">varchar</span><span class="fdesc">小区</span></div>
+          <div class="field-row"><span class="fname">managed_area_ha</span><span class="ftype">float</span><span class="fdesc">养护总面积（ha）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">铲叶 Pruning</div>
+          <div class="field-row"><span class="fname">pruning_daily_ha</span><span class="ftype">float</span><span class="fdesc">当日完成面积</span></div>
+          <div class="field-row"><span class="fname">pruning_mtd_ha</span><span class="ftype">float</span><span class="fdesc">MTD 累计面积</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">全面除草 CPT</div>
+          <div class="field-row"><span class="fname">cpt_daily_ha</span><span class="ftype">float</span><span class="fdesc">当日完成面积</span></div>
+          <div class="field-row"><span class="fname">cpt_mtd_ha</span><span class="ftype">float</span><span class="fdesc">MTD 累计面积</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">Lalang 控制</div>
+          <div class="field-row"><span class="fname">lalang_daily_ha</span><span class="ftype">float</span><span class="fdesc">当日完成面积</span></div>
+          <div class="field-row"><span class="fname">lalang_mtd_ha</span><span class="ftype">float</span><span class="fdesc">MTD 累计面积</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">选择性打药 Selektif Spraying</div>
+          <div class="field-row"><span class="fname">spray_daily_ha</span><span class="ftype">float</span><span class="fdesc">当日完成面积</span></div>
+          <div class="field-row"><span class="fname">spray_mtd_ha</span><span class="ftype">float</span><span class="fdesc">MTD 累计面积</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. dws_agri_fertilization_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_fertilization_daily</div>
+          <div class="grain">粒度：日 × 园区 × 小区</div>
+          <div class="src">来源：dwd_agri_fertilization_daily</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">division</span><span class="ftype">varchar</span><span class="fdesc">小区</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">每日计划</div>
+          <div class="field-row"><span class="fname">daily_target_kg</span><span class="ftype">float</span><span class="fdesc">当日目标施肥量（kg）</span></div>
+          <div class="field-row"><span class="fname">daily_actual_kg</span><span class="ftype">float</span><span class="fdesc">当日实际施肥量（kg）</span></div>
+          <div class="field-row"><span class="fname">daily_completion_pct</span><span class="ftype">float</span><span class="fdesc">当日完成率<span class="derived">派生</span></span></div>
+        </div>
+        <div class="fg"><div class="fg-label">截至当日（MTD）</div>
+          <div class="field-row"><span class="fname">mtd_target_kg</span><span class="ftype">float</span><span class="fdesc">截至当日累计目标</span></div>
+          <div class="field-row"><span class="fname">mtd_actual_kg</span><span class="ftype">float</span><span class="fdesc">截至当日累计实际</span></div>
+          <div class="field-row"><span class="fname">mtd_completion_pct</span><span class="ftype">float</span><span class="fdesc">累计完成率<span class="derived">派生</span></span></div>
+        </div>
+        <div class="fg"><div class="fg-label">月度计划</div>
+          <div class="field-row"><span class="fname">monthly_target_area_ha</span><span class="ftype">float</span><span class="fdesc">本月目标施肥面积</span></div>
+          <div class="field-row"><span class="fname">monthly_target_kg</span><span class="ftype">float</span><span class="fdesc">本月目标施肥量</span></div>
+          <div class="field-row"><span class="fname">monthly_completion_pct</span><span class="ftype">float</span><span class="fdesc">本月目标完成率<span class="derived">派生</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5a. dws_agri_fertilizer_stock_daily（养护）-->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_fertilizer_stock_daily</div>
+          <div class="grain">粒度：日 × 园区 × 物料编码 × 库位</div>
+          <div class="src">来源：dwd_agri_material_inventory_daily（material_category = fertilizer，每库位一行）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">site_code</span><span class="ftype">varchar</span><span class="fdesc">园区代码（SAP）</span></div>
+          <div class="field-row"><span class="fname">material_code</span><span class="ftype">varchar</span><span class="fdesc">物料编码（SAP）</span></div>
+          <div class="field-row"><span class="fname">material_type_code</span><span class="ftype">varchar</span><span class="fdesc">物料类型编码</span></div>
+          <div class="field-row"><span class="fname">material_name</span><span class="ftype">varchar</span><span class="fdesc">化肥名称</span></div>
+          <div class="field-row"><span class="fname">unit</span><span class="ftype">varchar</span><span class="fdesc">计量单位（KG / Ton / Bag）</span></div>
+          <div class="field-row"><span class="fname">storage_location</span><span class="ftype">varchar</span><span class="fdesc">库位名称（如 工厂 / G10 / 园区，各园区可不同）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">库存数量</div>
+          <div class="field-row"><span class="fname">stock_qty</span><span class="ftype">float</span><span class="fdesc">该库位当前库存量</span></div>
+          <div class="field-row"><span class="fname">daily_outbound</span><span class="ftype">float</span><span class="fdesc">当日出库量</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5b. dws_agri_pesticide_stock_daily（养护）-->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_pesticide_stock_daily</div>
+          <div class="grain">粒度：日 × 园区 × 物料编码</div>
+          <div class="src">来源：dwd_agri_material_inventory_daily（material_category = pesticide）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">site_code</span><span class="ftype">varchar</span><span class="fdesc">园区代码（SAP）</span></div>
+          <div class="field-row"><span class="fname">material_code</span><span class="ftype">varchar</span><span class="fdesc">物料编码（SAP）</span></div>
+          <div class="field-row"><span class="fname">material_type_code</span><span class="ftype">varchar</span><span class="fdesc">物料类型编码</span></div>
+          <div class="field-row"><span class="fname">material_name</span><span class="ftype">varchar</span><span class="fdesc">农药名称</span></div>
+          <div class="field-row"><span class="fname">unit</span><span class="ftype">varchar</span><span class="fdesc">计量单位（L / KG / Bottle）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">库存</div>
+          <div class="field-row"><span class="fname">stock_qty</span><span class="ftype">float</span><span class="fdesc">农药库存数量</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5c. dws_agri_tool_stock_daily（仓库）-->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_tool_stock_daily</div>
+          <div class="grain">粒度：日 × 园区 × 物料编码 × 库位</div>
+          <div class="src">来源：dwd_agri_material_inventory_daily（material_category = tools，每库位一行）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">site_code</span><span class="ftype">varchar</span><span class="fdesc">园区代码（SAP）</span></div>
+          <div class="field-row"><span class="fname">material_code</span><span class="ftype">varchar</span><span class="fdesc">物料编码（SAP）</span></div>
+          <div class="field-row"><span class="fname">material_type_code</span><span class="ftype">varchar</span><span class="fdesc">物料类型编码</span></div>
+          <div class="field-row"><span class="fname">material_group</span><span class="ftype">varchar</span><span class="fdesc">物料组</span></div>
+          <div class="field-row"><span class="fname">storage_location</span><span class="ftype">varchar</span><span class="fdesc">库位</span></div>
+          <div class="field-row"><span class="fname">material_name</span><span class="ftype">varchar</span><span class="fdesc">物料名称</span></div>
+          <div class="field-row"><span class="fname">unit</span><span class="ftype">varchar</span><span class="fdesc">单位</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">库存</div>
+          <div class="field-row"><span class="fname">physical_stock</span><span class="ftype">float</span><span class="fdesc">实物库存</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. dws_agri_oil_tank_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_oil_tank_daily</div>
+          <div class="grain">粒度：日 × 园区 × 油罐编号（每罐一行，早/晚读数同行存储）</div>
+          <div class="src">来源：dwd_agri_oil_storage_daily &nbsp;|&nbsp; 园区级字段（SAP/出库）在每罐行重复冗余存储</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">tank_code</span><span class="ftype">varchar</span><span class="fdesc">油罐编号（如 Tangki1 / Tangki2 / Drum，各园区自定义）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">早晨读数（Tangki 罐：打尺量换算；桶装油：dip_cm 为空，直接填升数）</div>
+          <div class="field-row"><span class="fname">morning_dip_cm</span><span class="ftype">float</span><span class="fdesc">早打尺测量值（cm），桶装油行为 NULL</span></div>
+          <div class="field-row"><span class="fname">morning_stock_liters</span><span class="ftype">float</span><span class="fdesc">早晨库存（升）— 油罐由打尺换算，桶装油直接填升数</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">下午读数（同上，桶装油 dip_cm 为空）</div>
+          <div class="field-row"><span class="fname">afternoon_dip_cm</span><span class="ftype">float</span><span class="fdesc">下午打尺测量值（cm），桶装油行为 NULL</span></div>
+          <div class="field-row"><span class="fname">afternoon_stock_liters</span><span class="ftype">float</span><span class="fdesc">下午库存（升）— 油罐由打尺换算，桶装油直接填升数</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">园区级汇总（同一园区各罐行值相同）</div>
+          <div class="field-row"><span class="fname">site_total_morning_liters</span><span class="ftype">float</span><span class="fdesc">早晨总计库存（所有罐合计）</span></div>
+          <div class="field-row"><span class="fname">site_total_afternoon_liters</span><span class="ftype">float</span><span class="fdesc">下午总计库存（所有罐合计）</span></div>
+          <div class="field-row"><span class="fname">inbound_liters</span><span class="ftype">float</span><span class="fdesc">当日入库量（升）</span></div>
+          <div class="field-row"><span class="fname">sap_book_liters</span><span class="ftype">float</span><span class="fdesc">SAP 账面库存（升）</span></div>
+          <div class="field-row"><span class="fname">sap_variance_liters</span><span class="ftype">float</span><span class="fdesc">实际与 SAP 差异<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">actual_outbound_liters</span><span class="ftype">float</span><span class="fdesc">实际出库量（升）</span></div>
+          <div class="field-row"><span class="fname">system_outbound_liters</span><span class="ftype">float</span><span class="fdesc">系统出库量（升）</span></div>
+          <div class="field-row"><span class="fname">outbound_variance_liters</span><span class="ftype">float</span><span class="fdesc">实际与系统出库量差异<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">pom_mini_outbound_pct</span><span class="ftype">float</span><span class="fdesc">POM mini 出库偏差率<span class="derived">派生</span> = （系统出库量 − 实际出库量）/ 系统出库量</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. dws_agri_harvest_loss_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_harvest_loss_daily</div>
+          <div class="grain">粒度：检查记录 × 园区 × 小区 × 地块</div>
+          <div class="src">来源：dwd_agri_harvest_loss_daily（加损失率计算）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">检查日期</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">division</span><span class="ftype">varchar</span><span class="fdesc">小区</span></div>
+          <div class="field-row"><span class="fname">blok</span><span class="ftype">varchar</span><span class="fdesc">地块</span></div>
+          <div class="field-row"><span class="fname">inspector</span><span class="ftype">varchar</span><span class="fdesc">检查人</span></div>
+          <div class="field-row"><span class="fname">bjr_kg</span><span class="ftype">float</span><span class="fdesc">平均果串重量（BJR）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">基础数量</div>
+          <div class="field-row"><span class="fname">harvested_bunches</span><span class="ftype">float</span><span class="fdesc">已铲果串数</span></div>
+          <div class="field-row"><span class="fname">harvested_weight_kg</span><span class="ftype">float</span><span class="fdesc">已铲重量</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">果串损失（树上未铲 / 遗漏）</div>
+          <div class="field-row"><span class="fname">lost_bunch_count</span><span class="ftype">float</span><span class="fdesc">损失果串数（串）</span></div>
+          <div class="field-row"><span class="fname">lost_bunch_weight_kg</span><span class="ftype">float</span><span class="fdesc">损失果串重（kg）</span></div>
+          <div class="field-row"><span class="fname">lost_bunch_rate_pct</span><span class="ftype">float</span><span class="fdesc">果串损失率<span class="derived">派生</span></span></div>
+        </div>
+        <div class="fg"><div class="fg-label">沟里损失（果串掉入排水沟）</div>
+          <div class="field-row"><span class="fname">ditch_bunch_count</span><span class="ftype">float</span><span class="fdesc">沟里损失果串数（串）</span></div>
+          <div class="field-row"><span class="fname">ditch_weight_kg</span><span class="ftype">float</span><span class="fdesc">沟里损失重（kg）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">腐烂损失</div>
+          <div class="field-row"><span class="fname">rotten_bunch_count</span><span class="ftype">float</span><span class="fdesc">腐烂果串数（串）</span></div>
+          <div class="field-row"><span class="fname">rotten_weight_kg</span><span class="ftype">float</span><span class="fdesc">腐烂损失重（kg）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">散果损失（Brondolan）</div>
+          <div class="field-row"><span class="fname">lost_loose_fruit_count</span><span class="ftype">float</span><span class="fdesc">损失散果总粒数（粒）</span></div>
+          <div class="field-row"><span class="fname">lost_loose_fruit_kg</span><span class="ftype">float</span><span class="fdesc">损失散果总重（kg）</span></div>
+          <div class="field-row"><span class="fname">lost_loose_fruit_rate_pct</span><span class="ftype">float</span><span class="fdesc">散果损失率<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">fresh_loose_count</span><span class="ftype">float</span><span class="fdesc">新鲜散果粒数（粒）</span></div>
+          <div class="field-row"><span class="fname">fresh_loose_weight_kg</span><span class="ftype">float</span><span class="fdesc">新鲜散果重（kg）</span></div>
+          <div class="field-row"><span class="fname">black_loose_count</span><span class="ftype">float</span><span class="fdesc">黑散果粒数（粒）</span></div>
+          <div class="field-row"><span class="fname">black_loose_weight_kg</span><span class="ftype">float</span><span class="fdesc">黑散果重（kg）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">汇总</div>
+          <div class="field-row"><span class="fname">total_loss_rate_pct</span><span class="ftype">float</span><span class="fdesc">总损失率<span class="derived">派生</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. dws_agri_rotation_monthly -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_rotation_monthly</div>
+          <div class="grain">粒度：月 × 园区 × 小区 × 地块</div>
+          <div class="src">来源：dwd_agri_harvest_rotation_monthly（写入时从 dim_blok 快照静态字段）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计月份（月首日，如 2025-06-01）</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司代码</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">division</span><span class="ftype">varchar</span><span class="fdesc">小区</span></div>
+          <div class="field-row"><span class="fname">blok_code</span><span class="ftype">varchar</span><span class="fdesc">地块编号</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">地块静态字段（写入时从 dim_blok 快照，保障历史准确）</div>
+          <div class="field-row"><span class="fname">maturity_stage</span><span class="ftype">varchar</span><span class="fdesc">成熟阶段（TM / scout）</span></div>
+          <div class="field-row"><span class="fname">planting_year</span><span class="ftype">int</span><span class="fdesc">种植年份</span></div>
+          <div class="field-row"><span class="fname">area_ha</span><span class="ftype">float</span><span class="fdesc">地块面积（ha）</span></div>
+          <div class="field-row"><span class="fname">palm_count</span><span class="ftype">float</span><span class="fdesc">棕榈棵数</span></div>
+          <div class="field-row"><span class="fname">sph</span><span class="ftype">float</span><span class="fdesc">每公顷棵数（SPH）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">月度动态数据</div>
+          <div class="field-row"><span class="fname">yph</span><span class="ftype">float</span><span class="fdesc">单公顷年产量（YPH）— 年初至今累计，每月更新</span></div>
+          <div class="field-row"><span class="fname">prev_month_days_unharvested</span><span class="ftype">float</span><span class="fdesc">上月末未铲天数 — 上月结束时该地块距上次铲果的天数</span></div>
+          <div class="field-row"><span class="fname">current_month_days_unharvested</span><span class="ftype">float</span><span class="fdesc">当月未铲天数 — 本月结束时距上次铲果的天数。若本月未铲（轮次=0），累计未铲天数 = 上月末 + 当月；若本月已铲，则为本月最后一次铲果后的天数</span></div>
+          <div class="field-row"><span class="fname">current_round_ha</span><span class="ftype">float</span><span class="fdesc">本轮铲果已完成面积（ha）</span></div>
+          <div class="field-row"><span class="fname">mtd_harvested_ha</span><span class="ftype">float</span><span class="fdesc">本月累计铲果面积（ha）</span></div>
+          <div class="field-row"><span class="fname">harvest_round_count</span><span class="ftype">float</span><span class="fdesc">本月铲果轮次（0 = 本月未铲）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. dws_agri_rotation_dist_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_rotation_dist_daily</div>
+          <div class="grain">粒度：日 × 园区 × 小区</div>
+          <div class="src">来源：dwd_agri_harvest_rotation_dist_daily（加各区间占比）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date / site / division</span><span class="ftype"></span><span class="fdesc">日期 / 园区 / 小区</span></div>
+          <div class="field-row"><span class="fname">total_area_ha / total_bloks</span><span class="ftype">float</span><span class="fdesc">总面积 / 总地块数</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">各周期区间（面积 + 地块数 + 占比）</div>
+          <div class="field-row"><span class="fname">d_le8_area_ha / d_le8_bloks / d_le8_pct</span><span class="ftype">float</span><span class="fdesc">≤8 天区间<span class="derived">pct 派生</span></span></div>
+          <div class="field-row"><span class="fname">d9_10_area_ha / d9_10_bloks / d9_10_pct</span><span class="ftype">float</span><span class="fdesc">9-10 天区间</span></div>
+          <div class="field-row"><span class="fname">d11_15_area_ha / d11_15_bloks / d11_15_pct</span><span class="ftype">float</span><span class="fdesc">11-15 天区间</span></div>
+          <div class="field-row"><span class="fname">d16_20_area_ha / d16_20_bloks / d16_20_pct</span><span class="ftype">float</span><span class="fdesc">16-20 天区间</span></div>
+          <div class="field-row"><span class="fname">d21_25_area_ha / d21_25_bloks / d21_25_pct</span><span class="ftype">float</span><span class="fdesc">21-25 天区间</span></div>
+          <div class="field-row"><span class="fname">d_gt25_area_ha / d_gt25_bloks / d_gt25_pct</span><span class="ftype">float</span><span class="fdesc">&gt;25 天区间</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. dws_agri_transport_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_transport_daily</div>
+          <div class="grain">粒度：送果单（SPB）× 日 × 园区 &nbsp;— 每车次一行</div>
+          <div class="src">来源：dwd_agri_tbs_transport_daily（直通，保留车次明细）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">运输日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司代码</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">来源园区</span></div>
+          <div class="field-row"><span class="fname">source_division</span><span class="ftype">varchar</span><span class="fdesc">来源小区</span></div>
+          <div class="field-row"><span class="fname">destination_factory</span><span class="ftype">varchar</span><span class="fdesc">送达工厂</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">送果单信息</div>
+          <div class="field-row"><span class="fname">spb_no</span><span class="ftype">varchar</span><span class="fdesc">送果单号（SPB）</span></div>
+          <div class="field-row"><span class="fname">trip_no</span><span class="ftype">varchar</span><span class="fdesc">车次编号</span></div>
+          <div class="field-row"><span class="fname">driver_name</span><span class="ftype">varchar</span><span class="fdesc">司机姓名</span></div>
+          <div class="field-row"><span class="fname">license_plate</span><span class="ftype">varchar</span><span class="fdesc">车牌号</span></div>
+          <div class="field-row"><span class="fname">vehicle_code</span><span class="ftype">varchar</span><span class="fdesc">车辆编号</span></div>
+          <div class="field-row"><span class="fname">remark</span><span class="ftype">text</span><span class="fdesc">备注</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">运输重量</div>
+          <div class="field-row"><span class="fname">bunch_count</span><span class="ftype">float</span><span class="fdesc">果串数</span></div>
+          <div class="field-row"><span class="fname">loose_fruit_kg</span><span class="ftype">float</span><span class="fdesc">散果重量（kg）</span></div>
+          <div class="field-row"><span class="fname">weighbridge_kg</span><span class="ftype">float</span><span class="fdesc">地磅净重（kg）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">时间节点</div>
+          <div class="field-row"><span class="fname">seal_time</span><span class="ftype">varchar</span><span class="fdesc">封车时间</span></div>
+          <div class="field-row"><span class="fname">security_depart_time</span><span class="ftype">varchar</span><span class="fdesc">保安放行时间</span></div>
+          <div class="field-row"><span class="fname">weighbridge_time</span><span class="ftype">varchar</span><span class="fdesc">地磅过磅时间</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">每日汇总（聚合行，source_division = "__daily__"）</div>
+          <div class="field-row"><span class="fname">daily_total_trips</span><span class="ftype">int</span><span class="fdesc">当日总车次<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">daily_total_weighbridge_kg</span><span class="ftype">float</span><span class="fdesc">当日地磅总重<span class="derived">派生</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. dws_agri_machinery_monthly -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_machinery_monthly</div>
+          <div class="grain">粒度：月 × 园区 × 设备编号（每月一行，最多31天数据压缩至列）</div>
+          <div class="src">来源：dwd_agri_equipment_fuel_monthly</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">月份（月首日）</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">equipment_type</span><span class="ftype">varchar</span><span class="fdesc">设备类型（重 / 中 / 轻）</span></div>
+          <div class="field-row"><span class="fname">equipment_code</span><span class="ftype">varchar</span><span class="fdesc">设备编号</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">每日 HM 与油耗（d1~d31，当月无该日则为 NULL）</div>
+          <div class="field-row"><span class="fname">hm_d1 / fuel_d1</span><span class="ftype">float</span><span class="fdesc">1日 HM / 油耗（升）</span></div>
+          <div class="field-row"><span class="fname">hm_d2 / fuel_d2</span><span class="ftype">float</span><span class="fdesc">2日 HM / 油耗</span></div>
+          <div class="field-row"><span class="fname">hm_d3 / fuel_d3</span><span class="ftype">float</span><span class="fdesc">3日 HM / 油耗</span></div>
+          <div class="field-row"><span class="fname">… …</span><span class="ftype"></span><span class="fdesc">（4日 ~ 30日，字段规律相同）</span></div>
+          <div class="field-row"><span class="fname">hm_d31 / fuel_d31</span><span class="ftype">float</span><span class="fdesc">31日 HM / 油耗（无31日的月份为 NULL）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">月度汇总</div>
+          <div class="field-row"><span class="fname">total_hm</span><span class="ftype">float</span><span class="fdesc">总计 HM</span></div>
+          <div class="field-row"><span class="fname">total_fuel_liters</span><span class="ftype">float</span><span class="fdesc">总计油耗（升）</span></div>
+          <div class="field-row"><span class="fname">hm_per_liter</span><span class="ftype">float</span><span class="fdesc">单升作业量<span class="derived">派生</span> = 总计HM / 总计油耗</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">校准</div>
+          <div class="field-row"><span class="fname">calibration_value</span><span class="ftype">float</span><span class="fdesc">Kalibrasi 校准值（放空加定量油，算工作量/油耗）</span></div>
+          <div class="field-row"><span class="fname">variance_act_vs_kalibrasi</span><span class="ftype">float</span><span class="fdesc">Varian（实际 vs 校准差异）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. dws_agri_rainfall_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_rainfall_daily</div>
+          <div class="grain">粒度：日 × 园区</div>
+          <div class="src">来源：dwd_agri_rainfall_daily（直通）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">指标</div>
+          <div class="field-row"><span class="fname">rainfall_mm</span><span class="ftype">float</span><span class="fdesc">当日降雨量（mm）</span></div>
+          <div class="field-row"><span class="fname">mtd_rainfall_mm</span><span class="ftype">float</span><span class="fdesc">月累计降雨量（mm）</span></div>
+          <div class="field-row"><span class="fname">rain_start_times</span><span class="ftype">varchar</span><span class="fdesc">降雨开始时间，多次用逗号分隔，如 "08:00, 14:30"</span></div>
+          <div class="field-row"><span class="fname">rain_end_times</span><span class="ftype">varchar</span><span class="fdesc">降雨结束时间，多次用逗号分隔，如 "10:30, 16:00"</span></div>
+          <div class="field-row"><span class="fname">duration_minutes</span><span class="ftype">varchar</span><span class="fdesc">持续时间（分钟），多次用逗号分隔，如 "150, 90"</span></div>
+          <div class="field-row"><span class="fname">remark</span><span class="ftype">text</span><span class="fdesc">降雨备注（大雨 / 小雨 / 未下雨等）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13. dws_agri_seedling_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_seedling_daily</div>
+          <div class="grain">粒度：日 × 运苗园区 × MRIS单号（每条运苗记录一行）</div>
+          <div class="src">来源：dwd_agri_seedling_transport_daily（直通）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">source_site</span><span class="ftype">varchar</span><span class="fdesc">运苗园区（苗从哪个园区发出）</span></div>
+          <div class="field-row"><span class="fname">mris_no</span><span class="ftype">varchar</span><span class="fdesc">MRIS 运输单号</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">运苗明细</div>
+          <div class="field-row"><span class="fname">transport_purpose</span><span class="ftype">varchar</span><span class="fdesc">运苗用途</span></div>
+          <div class="field-row"><span class="fname">destination_site</span><span class="ftype">varchar</span><span class="fdesc">用苗园区（可空，部分用途无此数据）</span></div>
+          <div class="field-row"><span class="fname">destination_blok</span><span class="ftype">varchar</span><span class="fdesc">目的地块（可空，部分用途无此数据）</span></div>
+          <div class="field-row"><span class="fname">daily_qty</span><span class="ftype">float</span><span class="fdesc">今日运苗数量</span></div>
+          <div class="field-row"><span class="fname">cumulative_qty</span><span class="ftype">float</span><span class="fdesc">累计运苗数量</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dws_agri_nursery_batch -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_nursery_batch</div>
+          <div class="grain">粒度：园区 × 苗批次（每批苗一行，存静态信息）</div>
+          <div class="src">来源：dwd_agri_nursery_batch（待建）&nbsp;|&nbsp; 对应报表：苗区统计</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">批次信息</div>
+          <div class="field-row"><span class="fname">batch_id</span><span class="ftype">varchar</span><span class="fdesc">批次ID（唯一标识，关联事件表）</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">seed_variety</span><span class="ftype">varchar</span><span class="fdesc">种子品种</span></div>
+          <div class="field-row"><span class="fname">planting_date</span><span class="ftype">date</span><span class="fdesc">种植日期</span></div>
+          <div class="field-row"><span class="fname">blok</span><span class="ftype">varchar</span><span class="fdesc">地块</span></div>
+          <div class="field-row"><span class="fname">initial_count</span><span class="ftype">float</span><span class="fdesc">初始苗数量</span></div>
+          <div class="field-row"><span class="fname">normal_count</span><span class="ftype">float</span><span class="fdesc">正常苗数量</span></div>
+          <div class="field-row"><span class="fname">twin_count</span><span class="ftype">float</span><span class="fdesc">双株苗数量</span></div>
+          <div class="field-row"><span class="fname">pre_nursery_eom_stock</span><span class="ftype">float</span><span class="fdesc">小苗阶段期末库存</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dws_agri_nursery_event -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_nursery_event</div>
+          <div class="grain">粒度：苗批次 × 操作日期（每次淘汰/出苗/盘点一行）</div>
+          <div class="src">来源：dwd_agri_nursery_batch（待建）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">batch_id</span><span class="ftype">varchar</span><span class="fdesc">关联 dws_agri_nursery_batch.batch_id</span></div>
+          <div class="field-row"><span class="fname">event_date</span><span class="ftype">date</span><span class="fdesc">操作日期</span></div>
+          <div class="field-row"><span class="fname">event_type</span><span class="ftype">varchar</span><span class="fdesc">事件类型：rejection（淘汰）/ dispatch（出苗）/ stock_check（盘点）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">操作数量</div>
+          <div class="field-row"><span class="fname">qty</span><span class="ftype">float</span><span class="fdesc">本次操作数量</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">截至本次操作的累计值</div>
+          <div class="field-row"><span class="fname">cumulative_rejected_count</span><span class="ftype">float</span><span class="fdesc">累计淘汰苗数量</span></div>
+          <div class="field-row"><span class="fname">cumulative_rejection_rate</span><span class="ftype">float</span><span class="fdesc">累计淘汰率<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">cumulative_dispatched_count</span><span class="ftype">float</span><span class="fdesc">至今出苗数量</span></div>
+          <div class="field-row"><span class="fname">current_stock</span><span class="ftype">float</span><span class="fdesc">操作后苗库存</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14a. dws_agri_equipment_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_equipment_daily</div>
+          <div class="grain">粒度：日 × 园区 × 设备编号</div>
+          <div class="src">来源：dwd_agri_equipment_daily &nbsp;|&nbsp; 静态字段（型号/购买日期）JOIN dim_equipment 取</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">equipment_category</span><span class="ftype">varchar</span><span class="fdesc">设备类别（重型 / 中型 / 小型）</span></div>
+          <div class="field-row"><span class="fname">equipment_code</span><span class="ftype">varchar</span><span class="fdesc">设备编号</span></div>
+          <div class="field-row"><span class="fname">equipment_type</span><span class="ftype">varchar</span><span class="fdesc">设备类型（EX / TR / DT 等）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">当日驾驶员</div>
+          <div class="field-row"><span class="fname">driver_shift1</span><span class="ftype">varchar</span><span class="fdesc">第一班司机</span></div>
+          <div class="field-row"><span class="fname">driver_shift2</span><span class="ftype">varchar</span><span class="fdesc">第二班司机</span></div>
+          <div class="field-row"><span class="fname">driver_shift3</span><span class="ftype">varchar</span><span class="fdesc">第三班司机</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">当日状态</div>
+          <div class="field-row"><span class="fname">is_normal</span><span class="ftype">bool</span><span class="fdesc">设备是否正常（正常√ / 否×）</span></div>
+          <div class="field-row"><span class="fname">is_working</span><span class="ftype">bool</span><span class="fdesc">当日是否作业（工作√ / 否×）</span></div>
+          <div class="field-row"><span class="fname">has_maintenance</span><span class="ftype">bool</span><span class="fdesc">是否保养（有√ / 无×）</span></div>
+          <div class="field-row"><span class="fname">remark</span><span class="ftype">text</span><span class="fdesc">备注（未作业原因说明）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14b. dws_agri_equipment_repair -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_equipment_repair</div>
+          <div class="grain">粒度：故障事件（每次故障一行，可跨多天）</div>
+          <div class="src">来源：dwd_agri_equipment_daily（故障记录聚合）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区</span></div>
+          <div class="field-row"><span class="fname">equipment_code</span><span class="ftype">varchar</span><span class="fdesc">设备编号</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">故障信息</div>
+          <div class="field-row"><span class="fname">breakdown_time</span><span class="ftype">timestamp</span><span class="fdesc">故障发生时间</span></div>
+          <div class="field-row"><span class="fname">damage_description</span><span class="ftype">text</span><span class="fdesc">损坏情况（故障描述）</span></div>
+          <div class="field-row"><span class="fname">repair_location</span><span class="ftype">varchar</span><span class="fdesc">维修地点（车间 / 现场）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">维修进度</div>
+          <div class="field-row"><span class="fname">estimated_repair_time</span><span class="ftype">timestamp</span><span class="fdesc">预计修复时间</span></div>
+          <div class="field-row"><span class="fname">repair_status</span><span class="ftype">varchar</span><span class="fdesc">维修状态（待修 / 维修中 / 已完成）</span></div>
+          <div class="field-row"><span class="fname">downtime_days</span><span class="ftype">float</span><span class="fdesc">停机天数</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15. dws_agri_transport_plan_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_agri_transport_plan_daily</div>
+          <div class="grain">粒度：日 × 园区 × 小区</div>
+          <div class="src">来源：dwd_agri_harvest_plan_daily</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">园区 / Rayon</span></div>
+          <div class="field-row"><span class="fname">division</span><span class="ftype">varchar</span><span class="fdesc">小区（Div.）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">铲果计划</div>
+          <div class="field-row"><span class="fname">harvest_area_ha</span><span class="ftype">float</span><span class="fdesc">铲果面积（可铲果的成熟面积）</span></div>
+          <div class="field-row"><span class="fname">akp_value</span><span class="ftype">float</span><span class="fdesc">AKP（用于估算当日采收量）</span></div>
+          <div class="field-row"><span class="fname">planned_harvest_area_ha</span><span class="ftype">float</span><span class="fdesc">当日预计铲果面积</span></div>
+          <div class="field-row"><span class="fname">planned_harvest_kg</span><span class="ftype">float</span><span class="fdesc">当日预计铲果量（kg）</span></div>
+          <div class="field-row"><span class="fname">harvest_blok_record</span><span class="ftype">text</span><span class="fdesc">当日铲果地块记录</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">剩果</div>
+          <div class="field-row"><span class="fname">leftover_h1_kg</span><span class="ftype">float</span><span class="fdesc">H+1 剩果量（前一日未运）</span></div>
+          <div class="field-row"><span class="fname">leftover_h2_kg</span><span class="ftype">float</span><span class="fdesc">H+2 剩果量（两日前未运）</span></div>
+          <div class="field-row"><span class="fname">leftover_h3_kg</span><span class="ftype">float</span><span class="fdesc">H+3 剩果量（三日前未运）</span></div>
+          <div class="field-row"><span class="fname">total_leftover_kg</span><span class="ftype">float</span><span class="fdesc">剩果合计（kg）</span></div>
+          <div class="field-row"><span class="fname">leftover_remark</span><span class="ftype">text</span><span class="fdesc">剩果说明（位置、原因等）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">运输计划</div>
+          <div class="field-row"><span class="fname">planned_transport_kg</span><span class="ftype">float</span><span class="fdesc">当日预计运输总量<span class="derived">派生</span> = 剩果合计 + 当日预计铲果量</span></div>
+          <div class="field-row"><span class="fname">planned_trips</span><span class="ftype">float</span><span class="fdesc">预计运输车次</span></div>
+          <div class="field-row"><span class="fname">planned_delivery_time</span><span class="ftype">varchar</span><span class="fdesc">预计送厂时间</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tbl-grid agri -->
+</div><!-- /section agri -->
+
+<!-- 工厂 DWS 详细字段 -->
+<div class="section" id="factory">
+  <div class="sec-head"><h2><span class="dept-badge badge-factory">工厂</span> DWS 表字段设计</h2></div>
+  <div class="tbl-grid">
+
+    <!-- dws_factory_pom_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_factory_pom_daily</div>
+          <div class="grain">粒度：日 × 工厂（Today + Monthly 各一行，period_type 区分）</div>
+          <div class="src">来源：dwd_factory_pom_production_daily</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">基础维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">month</span><span class="ftype">varchar</span><span class="fdesc">统计月份</span></div>
+          <div class="field-row"><span class="fname">period_type</span><span class="ftype">varchar</span><span class="fdesc">统计周期（Today / Monthly）</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">工厂名称</span></div>
+          <div class="field-row"><span class="fname">responsible_person</span><span class="ftype">varchar</span><span class="fdesc">负责人</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">FFB 收果</div>
+          <div class="field-row"><span class="fname">own_ffb_before_kg</span><span class="ftype">float</span><span class="fdesc">自有园收果-扣重前</span></div>
+          <div class="field-row"><span class="fname">own_ffb_after_kg</span><span class="ftype">float</span><span class="fdesc">自有园收果-扣重后</span></div>
+          <div class="field-row"><span class="fname">plasma_ffb_before_kg</span><span class="ftype">float</span><span class="fdesc">Plasma 收果-扣重前</span></div>
+          <div class="field-row"><span class="fname">plasma_ffb_after_kg</span><span class="ftype">float</span><span class="fdesc">Plasma 收果-扣重后</span></div>
+          <div class="field-row"><span class="fname">group_ffb_before_kg</span><span class="ftype">float</span><span class="fdesc">集团收果-扣重前</span></div>
+          <div class="field-row"><span class="fname">group_ffb_after_kg</span><span class="ftype">float</span><span class="fdesc">集团收果-扣重后</span></div>
+          <div class="field-row"><span class="fname">external_ffb_before_kg</span><span class="ftype">float</span><span class="fdesc">外部收果-扣重前</span></div>
+          <div class="field-row"><span class="fname">external_ffb_after_kg</span><span class="ftype">float</span><span class="fdesc">外部收果-扣重后</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">FFB 加工 & 结余</div>
+          <div class="field-row"><span class="fname">ffb_processed_before_kg</span><span class="ftype">float</span><span class="fdesc">FFB 加工量-扣重前</span></div>
+          <div class="field-row"><span class="fname">ffb_processed_after_kg</span><span class="ftype">float</span><span class="fdesc">FFB 加工量-扣重后</span></div>
+          <div class="field-row"><span class="fname">ffb_balance_kg</span><span class="ftype">float</span><span class="fdesc">FFB 结余</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">CPO 产出</div>
+          <div class="field-row"><span class="fname">cpo_production_kg</span><span class="ftype">float</span><span class="fdesc">CPO 产量</span></div>
+          <div class="field-row"><span class="fname">cpo_oe_before_pct</span><span class="ftype">float</span><span class="fdesc">纯CPO出油率-扣重前<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">cpo_oe_after_pct</span><span class="ftype">float</span><span class="fdesc">纯CPO出油率-扣重后<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">cpo_pao_oe_before_pct</span><span class="ftype">float</span><span class="fdesc">CPO+PAO出油率-扣重前<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">cpo_pao_oe_after_pct</span><span class="ftype">float</span><span class="fdesc">CPO+PAO出油率-扣重后<span class="derived">派生</span></span></div>
+        </div>
+        <div class="fg"><div class="fg-label">CPO 质量</div>
+          <div class="field-row"><span class="fname">cpo_ffa_pct</span><span class="ftype">float</span><span class="fdesc">CPO FFA（游离脂肪酸）</span></div>
+          <div class="field-row"><span class="fname">cpo_moisture_pct</span><span class="ftype">float</span><span class="fdesc">CPO 水分</span></div>
+          <div class="field-row"><span class="fname">cpo_impurity_pct</span><span class="ftype">float</span><span class="fdesc">CPO 杂质</span></div>
+          <div class="field-row"><span class="fname">cpo_loss_pct</span><span class="ftype">float</span><span class="fdesc">CPO 损耗率</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">Kernel（棕仁）产出</div>
+          <div class="field-row"><span class="fname">kernel_production_kg</span><span class="ftype">float</span><span class="fdesc">Kernel 产量</span></div>
+          <div class="field-row"><span class="fname">kernel_oe_before_pct</span><span class="ftype">float</span><span class="fdesc">Kernel 得率-扣重前<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">kernel_oe_after_pct</span><span class="ftype">float</span><span class="fdesc">Kernel 得率-扣重后<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">kernel_moisture_pct</span><span class="ftype">float</span><span class="fdesc">Kernel 水分</span></div>
+          <div class="field-row"><span class="fname">kernel_impurity_pct</span><span class="ftype">float</span><span class="fdesc">Kernel 杂质</span></div>
+          <div class="field-row"><span class="fname">kernel_loss_pct</span><span class="ftype">float</span><span class="fdesc">Kernel 损耗率</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">Shell（棕壳）</div>
+          <div class="field-row"><span class="fname">shell_production_kg</span><span class="ftype">float</span><span class="fdesc">壳产量</span></div>
+          <div class="field-row"><span class="fname">shell_yield_pct</span><span class="ftype">float</span><span class="fdesc">壳得率<span class="derived">派生</span> = 壳产量 / FFB加工量</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">PAO</div>
+          <div class="field-row"><span class="fname">pao_blend_kg</span><span class="ftype">float</span><span class="fdesc">PAO 混入/调和量</span></div>
+          <div class="field-row"><span class="fname">pao_production_kg</span><span class="ftype">float</span><span class="fdesc">PAO 产量/用量</span></div>
+          <div class="field-row"><span class="fname">pao_ratio_pct</span><span class="ftype">float</span><span class="fdesc">PAO 比例</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">销售</div>
+          <div class="field-row"><span class="fname">cpo_sales_kg</span><span class="ftype">float</span><span class="fdesc">CPO 销售量</span></div>
+          <div class="field-row"><span class="fname">miko_sales_kg</span><span class="ftype">float</span><span class="fdesc">MIKO 销售量</span></div>
+          <div class="field-row"><span class="fname">kernel_sales_kg</span><span class="ftype">float</span><span class="fdesc">PK/Kernel 销售量</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">成本 & 运行</div>
+          <div class="field-row"><span class="fname">cost_per_kg_ffb</span><span class="ftype">float</span><span class="fdesc">每 kg FFB 成本</span></div>
+          <div class="field-row"><span class="fname">processing_hours</span><span class="ftype">float</span><span class="fdesc">加工小时</span></div>
+          <div class="field-row"><span class="fname">throughput_per_hour</span><span class="ftype">float</span><span class="fdesc">小时处理量<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">efficiency_pct</span><span class="ftype">float</span><span class="fdesc">效率</span></div>
+          <div class="field-row"><span class="fname">downtime_hours</span><span class="ftype">float</span><span class="fdesc">停机小时</span></div>
+          <div class="field-row"><span class="fname">downtime_rate_pct</span><span class="ftype">float</span><span class="fdesc">停机率<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">downtime_reason</span><span class="ftype">text</span><span class="fdesc">停机说明</span></div>
+          <div class="field-row"><span class="fname">remark</span><span class="ftype">text</span><span class="fdesc">备注</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dws_factory_kcp_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_factory_kcp_daily</div>
+          <div class="grain">粒度：日 × 工厂（Today + Monthly 各一行，period_type 区分）</div>
+          <div class="src">来源：dwd_factory_kcp_production_daily</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">基础维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">month</span><span class="ftype">varchar</span><span class="fdesc">统计月份</span></div>
+          <div class="field-row"><span class="fname">period_type</span><span class="ftype">varchar</span><span class="fdesc">统计周期（Today / Monthly）</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">工厂名称</span></div>
+          <div class="field-row"><span class="fname">responsible_person</span><span class="ftype">varchar</span><span class="fdesc">负责人</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">PK 收料</div>
+          <div class="field-row"><span class="fname">own_pk_before_kg</span><span class="ftype">float</span><span class="fdesc">自有 PK 收料-扣重前</span></div>
+          <div class="field-row"><span class="fname">own_pk_after_kg</span><span class="ftype">float</span><span class="fdesc">自有 PK 收料-扣重后</span></div>
+          <div class="field-row"><span class="fname">group_pk_before_kg</span><span class="ftype">float</span><span class="fdesc">集团 PK 收料-扣重前</span></div>
+          <div class="field-row"><span class="fname">group_pk_after_kg</span><span class="ftype">float</span><span class="fdesc">集团 PK 收料-扣重后</span></div>
+          <div class="field-row"><span class="fname">external_pk_before_kg</span><span class="ftype">float</span><span class="fdesc">外部 PK 收料-扣重前</span></div>
+          <div class="field-row"><span class="fname">external_pk_after_kg</span><span class="ftype">float</span><span class="fdesc">外部 PK 收料-扣重后</span></div>
+          <div class="field-row"><span class="fname">pk_total_before_kg</span><span class="ftype">float</span><span class="fdesc">PK 收料合计-扣重前</span></div>
+          <div class="field-row"><span class="fname">pk_total_after_kg</span><span class="ftype">float</span><span class="fdesc">PK 收料合计-扣重后</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">PK 加工 & 结余</div>
+          <div class="field-row"><span class="fname">pk_processed_before_kg</span><span class="ftype">float</span><span class="fdesc">PK 加工量-扣重前</span></div>
+          <div class="field-row"><span class="fname">pk_processed_after_kg</span><span class="ftype">float</span><span class="fdesc">PK 加工量-扣重后</span></div>
+          <div class="field-row"><span class="fname">pk_balance_kg</span><span class="ftype">float</span><span class="fdesc">PK 结余</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">PKO/CPKO 产出</div>
+          <div class="field-row"><span class="fname">pko_production_kg</span><span class="ftype">float</span><span class="fdesc">PKO/CPKO 产量</span></div>
+          <div class="field-row"><span class="fname">pko_oe_before_pct</span><span class="ftype">float</span><span class="fdesc">出油率-扣重前<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">pko_oe_after_pct</span><span class="ftype">float</span><span class="fdesc">出油率-扣重后<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">pko_ffa_pct</span><span class="ftype">float</span><span class="fdesc">PKO FFA</span></div>
+          <div class="field-row"><span class="fname">pko_moisture_pct</span><span class="ftype">float</span><span class="fdesc">PKO 水分</span></div>
+          <div class="field-row"><span class="fname">pko_impurity_pct</span><span class="ftype">float</span><span class="fdesc">PKO 杂质</span></div>
+          <div class="field-row"><span class="fname">line1_oil_loss_kg</span><span class="ftype">float</span><span class="fdesc">1号线油损</span></div>
+          <div class="field-row"><span class="fname">line2_oil_loss_kg</span><span class="ftype">float</span><span class="fdesc">2号线油损</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">PKE 产出</div>
+          <div class="field-row"><span class="fname">pke_production_kg</span><span class="ftype">float</span><span class="fdesc">PKE 产量</span></div>
+          <div class="field-row"><span class="fname">pke_bags</span><span class="ftype">float</span><span class="fdesc">PKE 袋数</span></div>
+          <div class="field-row"><span class="fname">pke_yield_before_pct</span><span class="ftype">float</span><span class="fdesc">PKE 得率-扣重前<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">pke_yield_after_pct</span><span class="ftype">float</span><span class="fdesc">PKE 得率-扣重后<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">external_crude_meal_kg</span><span class="ftype">float</span><span class="fdesc">外部粗粕</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">销售</div>
+          <div class="field-row"><span class="fname">pko_sales_kg</span><span class="ftype">float</span><span class="fdesc">PKO 销售量</span></div>
+          <div class="field-row"><span class="fname">pke_sales_kg</span><span class="ftype">float</span><span class="fdesc">PKE 销售量</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">成本 & 运行</div>
+          <div class="field-row"><span class="fname">cost_per_kg_pkb</span><span class="ftype">float</span><span class="fdesc">每 kg PKB 成本</span></div>
+          <div class="field-row"><span class="fname">processing_hours</span><span class="ftype">float</span><span class="fdesc">加工小时</span></div>
+          <div class="field-row"><span class="fname">throughput_per_hour</span><span class="ftype">float</span><span class="fdesc">小时处理量<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">efficiency_pct</span><span class="ftype">float</span><span class="fdesc">效率</span></div>
+          <div class="field-row"><span class="fname">downtime_hours</span><span class="ftype">float</span><span class="fdesc">停机小时</span></div>
+          <div class="field-row"><span class="fname">downtime_rate_pct</span><span class="ftype">float</span><span class="fdesc">停机率<span class="derived">派生</span></span></div>
+          <div class="field-row"><span class="fname">downtime_reason</span><span class="ftype">text</span><span class="fdesc">停机说明</span></div>
+          <div class="field-row"><span class="fname">remark</span><span class="ftype">text</span><span class="fdesc">备注</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dws_factory_refinery_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_factory_refinery_daily</div>
+          <div class="grain">粒度：日 × 工厂（Today + Monthly 各一行，period_type 区分）</div>
+          <div class="src">来源：dwd_factory_refinery_production_daily</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">基础维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">统计日期</span></div>
+          <div class="field-row"><span class="fname">month</span><span class="ftype">varchar</span><span class="fdesc">统计月份</span></div>
+          <div class="field-row"><span class="fname">period_type</span><span class="ftype">varchar</span><span class="fdesc">统计周期（Today / Monthly）</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">工厂名称</span></div>
+          <div class="field-row"><span class="fname">responsible_person</span><span class="ftype">varchar</span><span class="fdesc">负责人</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">原料投入</div>
+          <div class="field-row"><span class="fname">cpo_low_acid_input_kg</span><span class="ftype">float</span><span class="fdesc">CPO 低酸原料（FFA &lt; 5%）</span></div>
+          <div class="field-row"><span class="fname">cpo_high_acid_input_kg</span><span class="ftype">float</span><span class="fdesc">CPO 高酸原料（FFA &gt; 5%）</span></div>
+          <div class="field-row"><span class="fname">cpko_input_kg</span><span class="ftype">float</span><span class="fdesc">CPKO 原料</span></div>
+          <div class="field-row"><span class="fname">olein_input_kg</span><span class="ftype">float</span><span class="fdesc">Olein 原料</span></div>
+          <div class="field-row"><span class="fname">stearin_input_kg</span><span class="ftype">float</span><span class="fdesc">Stearin 原料</span></div>
+          <div class="field-row"><span class="fname">rbdpo_input_kg</span><span class="ftype">float</span><span class="fdesc">RBDPO 原料</span></div>
+          <div class="field-row"><span class="fname">rbdst_tank_input_kg</span><span class="ftype">float</span><span class="fdesc">RBDST 罐区投入</span></div>
+          <div class="field-row"><span class="fname">rbdpol_tank_input_kg</span><span class="ftype">float</span><span class="fdesc">RBDPOL 罐区投入</span></div>
+          <div class="field-row"><span class="fname">total_input_kg</span><span class="ftype">float</span><span class="fdesc">原料投入合计</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">精炼产出</div>
+          <div class="field-row"><span class="fname">rbdpo_production_kg</span><span class="ftype">float</span><span class="fdesc">RBDPO 产量</span></div>
+          <div class="field-row"><span class="fname">rbdpko_production_kg</span><span class="ftype">float</span><span class="fdesc">RBDPKO 产量</span></div>
+          <div class="field-row"><span class="fname">pfad_production_kg</span><span class="ftype">float</span><span class="fdesc">PFAD 产量</span></div>
+          <div class="field-row"><span class="fname">pkfad_production_kg</span><span class="ftype">float</span><span class="fdesc">PKFAD 产量</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">分提产出</div>
+          <div class="field-row"><span class="fname">rbdol_production_kg</span><span class="ftype">float</span><span class="fdesc">RBDOL 产量（液油/Olein）</span></div>
+          <div class="field-row"><span class="fname">rbdst_production_kg</span><span class="ftype">float</span><span class="fdesc">RBDST 产量（硬脂/Stearin）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">包装产出</div>
+          <div class="field-row"><span class="fname">oilku_1l_production_kg</span><span class="ftype">float</span><span class="fdesc">Oilku 1L 产量</span></div>
+          <div class="field-row"><span class="fname">oilku_2l_production_kg</span><span class="ftype">float</span><span class="fdesc">Oilku 2L 产量</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">产出汇总 & 成本 & 得率</div>
+          <div class="field-row"><span class="fname">total_output_kg</span><span class="ftype">float</span><span class="fdesc">产品产量合计</span></div>
+          <div class="field-row"><span class="fname">unit_processing_cost</span><span class="ftype">float</span><span class="fdesc">单位加工成本</span></div>
+          <div class="field-row"><span class="fname">yield_pct</span><span class="ftype">float</span><span class="fdesc">原料得率<span class="derived">派生</span> = 产出 / 投入</span></div>
+          <div class="field-row"><span class="fname">remark</span><span class="ftype">text</span><span class="fdesc">备注</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">销售量</div>
+          <div class="field-row"><span class="fname">rbdpo_sales_kg</span><span class="ftype">float</span><span class="fdesc">RBDPO 销售量</span></div>
+          <div class="field-row"><span class="fname">rbdpo_sales_pu_kg</span><span class="ftype">float</span><span class="fdesc">RBDPO 销售至 PT.PU</span></div>
+          <div class="field-row"><span class="fname">rbdpo_sales_asp_kg</span><span class="ftype">float</span><span class="fdesc">RBDPO 销售至 PT.ASP</span></div>
+          <div class="field-row"><span class="fname">rbdpko_sales_kg</span><span class="ftype">float</span><span class="fdesc">RBDPKO 销售量</span></div>
+          <div class="field-row"><span class="fname">pfad_sales_kg</span><span class="ftype">float</span><span class="fdesc">PFAD 销售量</span></div>
+          <div class="field-row"><span class="fname">pkfad_sales_kg</span><span class="ftype">float</span><span class="fdesc">PKFAD 销售量</span></div>
+          <div class="field-row"><span class="fname">rbdol_sales_kg</span><span class="ftype">float</span><span class="fdesc">RBDOL 销售量</span></div>
+          <div class="field-row"><span class="fname">rbdst_sales_kg</span><span class="ftype">float</span><span class="fdesc">RBDST 销售量</span></div>
+          <div class="field-row"><span class="fname">oilku_1l_sales_kg</span><span class="ftype">float</span><span class="fdesc">Oilku 1L 销售量</span></div>
+          <div class="field-row"><span class="fname">oilku_2l_sales_kg</span><span class="ftype">float</span><span class="fdesc">Oilku 2L 销售量</span></div>
+          <div class="field-row"><span class="fname">total_sales_kg</span><span class="ftype">float</span><span class="fdesc">销售总量</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dws_factory_grading_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_factory_grading_daily</div>
+          <div class="grain">粒度：收果单（SPB）× 日 × 工厂（每车次一行）</div>
+          <div class="src">来源：dwd_factory_grading_daily（直通）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">信息 Info</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">日期（Tanggal）</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司（PT）</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">工厂</span></div>
+          <div class="field-row"><span class="fname">source_code</span><span class="ftype">varchar</span><span class="fdesc">编码（Kode，公司/园区代码）</span></div>
+          <div class="field-row"><span class="fname">source_estate_division</span><span class="ftype">varchar</span><span class="fdesc">区域 Estate（园区+小区）</span></div>
+          <div class="field-row"><span class="fname">vehicle</span><span class="ftype">varchar</span><span class="fdesc">车辆 Vehicle（车牌 / 内部标识）</span></div>
+          <div class="field-row"><span class="fname">spb_no</span><span class="ftype">varchar</span><span class="fdesc">收果单号 No.SPB</span></div>
+          <div class="field-row"><span class="fname">blok</span><span class="ftype">varchar</span><span class="fdesc">地块 Blok</span></div>
+          <div class="field-row"><span class="fname">bunch_count</span><span class="ftype">float</span><span class="fdesc">果串数 Janjang（总收果串数）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">分级果串数 Grading JJG（各等级占比 %）</div>
+          <div class="field-row"><span class="fname">unripe_pct</span><span class="ftype">float</span><span class="fdesc">生果 Unripe (%)</span></div>
+          <div class="field-row"><span class="fname">under_ripe_pct</span><span class="ftype">float</span><span class="fdesc">欠熟果 Under Ripe (%)</span></div>
+          <div class="field-row"><span class="fname">ripe_pct</span><span class="ftype">float</span><span class="fdesc">熟果 Ripe (%)</span></div>
+          <div class="field-row"><span class="fname">over_ripe_pct</span><span class="ftype">float</span><span class="fdesc">过熟果 Over Ripe (%)</span></div>
+          <div class="field-row"><span class="fname">empty_bunch_pct</span><span class="ftype">float</span><span class="fdesc">空果串 Empty Bunch (%)</span></div>
+          <div class="field-row"><span class="fname">parthenocarpic_pct</span><span class="ftype">float</span><span class="fdesc">刺猬果 Parthenocarpic (%)</span></div>
+          <div class="field-row"><span class="fname">dura_pct</span><span class="ftype">float</span><span class="fdesc">杜拉 Dura (%)</span></div>
+          <div class="field-row"><span class="fname">brondolan_kg</span><span class="ftype">float</span><span class="fdesc">果粒 Brondolan (kg)</span></div>
+          <div class="field-row"><span class="fname">long_stalk_pct</span><span class="ftype">float</span><span class="fdesc">长柄果 Long Stalk (%)</span></div>
+          <div class="field-row"><span class="fname">small_fruit_pct</span><span class="ftype">float</span><span class="fdesc">幼果 Buah &lt; 3kg (%)</span></div>
+          <div class="field-row"><span class="fname">rotten_pct</span><span class="ftype">float</span><span class="fdesc">腐烂果 Rotten (%)</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">分级汇总 Sum Grading</div>
+          <div class="field-row"><span class="fname">jjg_sample_count</span><span class="ftype">float</span><span class="fdesc">取样果串数 JJG sample</span></div>
+          <div class="field-row"><span class="fname">weight_before_grading_ton</span><span class="ftype">float</span><span class="fdesc">分级前重量 Tonse BG</span></div>
+          <div class="field-row"><span class="fname">weight_after_grading_ton</span><span class="ftype">float</span><span class="fdesc">分级后重量 Tonse AG</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">扣重汇总 Sum POT</div>
+          <div class="field-row"><span class="fname">pot_teoritis_pct</span><span class="ftype">float</span><span class="fdesc">理论扣重 Teoritis (%)</span></div>
+          <div class="field-row"><span class="fname">pot_calculation_pct</span><span class="ftype">float</span><span class="fdesc">计算扣重 Pemhitongan (%)</span></div>
+          <div class="field-row"><span class="fname">rejection_kg</span><span class="ftype">float</span><span class="fdesc">退回重量 REJ (KG)</span></div>
+          <div class="field-row"><span class="fname">rejection_pct</span><span class="ftype">float</span><span class="fdesc">退回比例 REJ (%)</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">扣重计算 Pemhitongan POT（各等级 KG）</div>
+          <div class="field-row"><span class="fname">pot_total_kg</span><span class="ftype">float</span><span class="fdesc">总扣重 POT total (KG)</span></div>
+          <div class="field-row"><span class="fname">pot_unripe_kg</span><span class="ftype">float</span><span class="fdesc">生果扣重 (KG)</span></div>
+          <div class="field-row"><span class="fname">pot_under_ripe_kg</span><span class="ftype">float</span><span class="fdesc">欠熟扣重 (KG)</span></div>
+          <div class="field-row"><span class="fname">pot_ripe_pct</span><span class="ftype">float</span><span class="fdesc">熟果扣重 (%)</span></div>
+          <div class="field-row"><span class="fname">pot_over_ripe_pct</span><span class="ftype">float</span><span class="fdesc">过熟扣重 (%)</span></div>
+          <div class="field-row"><span class="fname">pot_empty_bunch_pct</span><span class="ftype">float</span><span class="fdesc">空串扣重 (%)</span></div>
+          <div class="field-row"><span class="fname">pot_parthenocarpic_pct</span><span class="ftype">float</span><span class="fdesc">刺猬扣重 (%)</span></div>
+          <div class="field-row"><span class="fname">pot_dura_pct</span><span class="ftype">float</span><span class="fdesc">杜拉扣重 (%)</span></div>
+          <div class="field-row"><span class="fname">pot_brondolan_kg</span><span class="ftype">float</span><span class="fdesc">散果扣重 (KG)</span></div>
+          <div class="field-row"><span class="fname">pot_long_stalk_pct</span><span class="ftype">float</span><span class="fdesc">长柄扣重 (%)</span></div>
+          <div class="field-row"><span class="fname">pot_small_fruit_pct</span><span class="ftype">float</span><span class="fdesc">幼果扣重 (%)</span></div>
+          <div class="field-row"><span class="fname">pot_rotten_pct</span><span class="ftype">float</span><span class="fdesc">腐烂扣重 (%)</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">检查 Check</div>
+          <div class="field-row"><span class="fname">grading_slip_pct</span><span class="ftype">float</span><span class="fdesc">分级单 Surat Grading (%)</span></div>
+          <div class="field-row"><span class="fname">check_variance_pct</span><span class="ftype">float</span><span class="fdesc">检查差异（理论 vs 分级单）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dws_factory_weighbridge_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_factory_weighbridge_daily</div>
+          <div class="grain">粒度：票据号 × 日 × 工厂（每票一行）</div>
+          <div class="src">来源：dwd_factory_weighbridge_daily（直通）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">工厂</span></div>
+          <div class="field-row"><span class="fname">ticket_no</span><span class="ftype">varchar</span><span class="fdesc">票据号 No Ticket</span></div>
+          <div class="field-row"><span class="fname">direction</span><span class="ftype">varchar</span><span class="fdesc">进出方向（In / Out）</span></div>
+          <div class="field-row"><span class="fname">transaction_type</span><span class="ftype">varchar</span><span class="fdesc">运输类型 Trans（内部 / 销售 / 采购等）</span></div>
+          <div class="field-row"><span class="fname">product</span><span class="ftype">varchar</span><span class="fdesc">产品 Products</span></div>
+          <div class="field-row"><span class="fname">vehicle</span><span class="ftype">varchar</span><span class="fdesc">车牌号 Vehicles</span></div>
+          <div class="field-row"><span class="fname">customer</span><span class="ftype">varchar</span><span class="fdesc">客户 Customers（运输目标）</span></div>
+          <div class="field-row"><span class="fname">transporter</span><span class="ftype">varchar</span><span class="fdesc">运输方 Transporters</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">过磅</div>
+          <div class="field-row"><span class="fname">first_weight_kg</span><span class="ftype">float</span><span class="fdesc">第一次过磅重量（1st）</span></div>
+          <div class="field-row"><span class="fname">second_weight_kg</span><span class="ftype">float</span><span class="fdesc">第二次过磅重量（2nd）</span></div>
+          <div class="field-row"><span class="fname">netto_kg</span><span class="ftype">float</span><span class="fdesc">净重 Netto</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">果串信息（运果时填写）</div>
+          <div class="field-row"><span class="fname">bunch_count</span><span class="ftype">float</span><span class="fdesc">果串数 JJG</span></div>
+          <div class="field-row"><span class="fname">loose_fruit_kg</span><span class="ftype">float</span><span class="fdesc">散果重量 Brondolan (KG)</span></div>
+          <div class="field-row"><span class="fname">bjr_kg</span><span class="ftype">float</span><span class="fdesc">平均果重 BJR</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">其他</div>
+          <div class="field-row"><span class="fname">out_items</span><span class="ftype">varchar</span><span class="fdesc">带出物品 BARANG KELUAR（一般为空果串）</span></div>
+          <div class="field-row"><span class="fname">remark</span><span class="ftype">text</span><span class="fdesc">备注</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dws_factory_product_stock_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_factory_product_stock_daily</div>
+          <div class="grain">粒度：日 × 工厂 × 产品类型 × 产品规格 × 储存位置 × 罐号</div>
+          <div class="src">来源：dwd_factory_product_inventory_daily（每罐/仓一行）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">基础维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">日期</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">工厂</span></div>
+          <div class="field-row"><span class="fname">product_type</span><span class="ftype">varchar</span><span class="fdesc">产品类型（CPO / PAO / CPKO / PKE / PK / RBDPO 等）</span></div>
+          <div class="field-row"><span class="fname">product_spec</span><span class="ftype">varchar</span><span class="fdesc">产品规格（Oilku 1L / Oilku 2L / PKE Bags 等）</span></div>
+          <div class="field-row"><span class="fname">storage_location</span><span class="ftype">varchar</span><span class="fdesc">储存位置（油罐 / 仓库 / 混合罐 / 缓冲罐等）</span></div>
+          <div class="field-row"><span class="fname">tank_no</span><span class="ftype">varchar</span><span class="fdesc">罐号/仓号（Tank No.1、Tank No.3 等）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">库存</div>
+          <div class="field-row"><span class="fname">capacity</span><span class="ftype">float</span><span class="fdesc">罐容/仓容（最大储存容量）</span></div>
+          <div class="field-row"><span class="fname">actual_stock</span><span class="ftype">float</span><span class="fdesc">实际库存</span></div>
+          <div class="field-row"><span class="fname">unit</span><span class="ftype">varchar</span><span class="fdesc">库存单位（Kg / Ton / Bags / Carton）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">质量</div>
+          <div class="field-row"><span class="fname">ffa_pct</span><span class="ftype">float</span><span class="fdesc">FFA（酸价/游离脂肪酸）</span></div>
+          <div class="field-row"><span class="fname">moisture_pct</span><span class="ftype">float</span><span class="fdesc">水分</span></div>
+          <div class="field-row"><span class="fname">impurity_pct</span><span class="ftype">float</span><span class="fdesc">杂质</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">预测 & 安全库存</div>
+          <div class="field-row"><span class="fname">eom_forecast_stock</span><span class="ftype">float</span><span class="fdesc">预计月底库存</span></div>
+          <div class="field-row"><span class="fname">next_month_production_forecast</span><span class="ftype">float</span><span class="fdesc">下月产量预估</span></div>
+          <div class="field-row"><span class="fname">safety_stock_days</span><span class="ftype">float</span><span class="fdesc">安全库存天数（当前库存可支撑天数）</span></div>
+          <div class="field-row"><span class="fname">product_stock_total</span><span class="ftype">float</span><span class="fdesc">产品库存合计（按产品汇总）</span></div>
+          <div class="field-row"><span class="fname">remark</span><span class="ftype">text</span><span class="fdesc">备注（库存或质量异常说明）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dws_factory_chemical_daily -->
+    <div class="tbl-card">
+      <div class="tbl-card-head">
+        <div>
+          <div class="tname">dws_factory_chemical_daily</div>
+          <div class="grain">粒度：日 × 工厂</div>
+          <div class="src">来源：dwd_factory_chemical_consumption_daily（chemical_code 透视为宽列）</div>
+        </div>
+      </div>
+      <div class="field-list">
+        <div class="fg"><div class="fg-label">维度</div>
+          <div class="field-row"><span class="fname">report_date</span><span class="ftype">date</span><span class="fdesc">日期（TANGGAL）</span></div>
+          <div class="field-row"><span class="fname">company_code</span><span class="ftype">varchar</span><span class="fdesc">公司</span></div>
+          <div class="field-row"><span class="fname">site</span><span class="ftype">varchar</span><span class="fdesc">工厂</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">Water Treatment 水处理（单位 kg）</div>
+          <div class="field-row"><span class="fname">caustic_soda_kg</span><span class="ftype">float</span><span class="fdesc">Caustic Soda（烧碱）</span></div>
+          <div class="field-row"><span class="fname">aluminium_sulfate_kg</span><span class="ftype">float</span><span class="fdesc">Aluminium Sulfat（硫酸铝）</span></div>
+          <div class="field-row"><span class="fname">aero_asc_kg</span><span class="ftype">float</span><span class="fdesc">AERO ASC 1016</span></div>
+          <div class="field-row"><span class="fname">salt_kg</span><span class="ftype">float</span><span class="fdesc">Garam（盐）</span></div>
+          <div class="field-row"><span class="fname">polymer_kg</span><span class="ftype">float</span><span class="fdesc">Polimer（聚合物）</span></div>
+        </div>
+        <div class="fg"><div class="fg-label">Boiler Treatment 锅炉水处理（单位 kg）</div>
+          <div class="field-row"><span class="fname">scf_kg</span><span class="ftype">float</span><span class="fdesc">SCF</span></div>
+          <div class="field-row"><span class="fname">oxifite_kg</span><span class="ftype">float</span><span class="fdesc">OXIFITE（除氧剂）</span></div>
+          <div class="field-row"><span class="fname">gr_kg</span><span class="ftype">float</span><span class="fdesc">GR</span></div>
+          <div class="field-row"><span class="fname">ps05_kg</span><span class="ftype">float</span><span class="fdesc">PS 05</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tbl-grid factory -->
+</div><!-- /section factory -->
+
+<!-- 待确认说明 -->
+<div class="section">
+  <div class="sec-head"><h2>待确认事项</h2></div>
+  <div style="padding:16px 20px">
+    <table class="summary-table">
+      <thead><tr><th>#</th><th>表</th><th>问题</th><th>建议</th></tr></thead>
+      <tbody>
+        <tr style="background:#fef9c3"><td>1</td><td class="mono">dws_agri_harvest_work_record</td><td>数据来源：Smart Salary 系统，本期暂不实现</td><td>⚠️ 标记为待对接，后续与 Smart Salary 确认接口后再建 DWD/DWS</td></tr>
+        <tr><td>2</td><td class="mono">dws_factory_dispatch_daily</td><td>发货统计数据来源未明确（地磅单 or 独立报表）</td><td>确认来源后决定是否复用 weighbridge 或新建 DWD</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="color:#94a3b8;font-size:12px;text-align:center;margin-top:20px">
+  生成时间：2026-06-03 &nbsp;|&nbsp; DWS 层设计 v1.0 &nbsp;|&nbsp; 共 23 张宽表
+</div>
+
+</main>
+<script>
+// 表名 → 部门 / 模块映射
+const TABLE_META = {
+  'dws_agri_harvest_daily':          { dept:'农业', module:'铲果' },
+  'dws_agri_harvest_work_record':    { dept:'农业', module:'铲果' },
+  'dws_agri_rotation_monthly':       { dept:'农业', module:'铲果周期' },
+  'dws_agri_rotation_dist_daily':    { dept:'农业', module:'铲果周期' },
+  'dws_agri_transport_daily':        { dept:'农业', module:'铲果运输' },
+  'dws_agri_transport_plan_daily':   { dept:'农业', module:'铲果运输' },
+  'dws_agri_harvest_loss_daily':     { dept:'农业', module:'损失' },
+  'dws_agri_attendance_daily':       { dept:'农业', module:'出勤' },
+  'dws_agri_maintenance_daily':      { dept:'农业', module:'养护' },
+  'dws_agri_fertilization_daily':    { dept:'农业', module:'养护' },
+  'dws_agri_fertilizer_stock_daily': { dept:'农业', module:'养护' },
+  'dws_agri_pesticide_stock_daily':  { dept:'农业', module:'养护' },
+  'dws_agri_tool_stock_daily':       { dept:'农业', module:'仓库' },
+  'dws_agri_oil_tank_daily':         { dept:'农业', module:'仓库' },
+  'dws_agri_machinery_monthly':      { dept:'农业', module:'机械' },
+  'dws_agri_equipment_daily':        { dept:'农业', module:'机械' },
+  'dws_agri_equipment_repair':       { dept:'农业', module:'机械' },
+  'dws_agri_seedling_daily':         { dept:'农业', module:'苗区' },
+  'dws_agri_nursery_batch':          { dept:'农业', module:'苗区' },
+  'dws_agri_nursery_event':          { dept:'农业', module:'苗区' },
+  'dws_agri_rainfall_daily':         { dept:'农业', module:'降雨' },
+  'dws_factory_pom_daily':           { dept:'工厂', module:'生产' },
+  'dws_factory_kcp_daily':           { dept:'工厂', module:'生产' },
+  'dws_factory_refinery_daily':      { dept:'工厂', module:'生产' },
+  'dws_factory_grading_daily':       { dept:'工厂', module:'分级' },
+  'dws_factory_weighbridge_daily':   { dept:'工厂', module:'地磅' },
+  'dws_factory_product_stock_daily': { dept:'工厂', module:'库存' },
+  'dws_factory_chemical_daily':      { dept:'工厂', module:'库存' },
+};
+
+// 模块对应的部门（用于按部门切换时决定显示哪些模块按钮）
+const MODULE_DEPT = {};
+Object.values(TABLE_META).forEach(({ dept, module }) => {
+  if (!MODULE_DEPT[dept]) MODULE_DEPT[dept] = new Set();
+  MODULE_DEPT[dept].add(module);
+});
+const ALL_MODULES = [...new Set(Object.values(TABLE_META).map(m => m.module))];
+
+let activeDept = '';
+let activeModule = '';
+
+// 初始化：给每张 tbl-card 打标签
+document.querySelectorAll('.tbl-card').forEach(card => {
+  const name = card.querySelector('.tname')?.textContent?.trim() || '';
+  const meta = TABLE_META[name] || { dept: '', module: '' };
+  card.dataset.dept = meta.dept;
+  card.dataset.module = meta.module;
+});
+
+// 渲染模块按钮
+function renderModuleButtons(dept) {
+  const container = document.getElementById('moduleButtons');
+  const modules = dept ? [...(MODULE_DEPT[dept] || [])] : ALL_MODULES;
+  container.innerHTML = `<button class="fb active" data-module="">全部</button>` +
+    modules.map(m => `<button class="fb" data-module="${m}">${m}</button>`).join('');
+  // 重新绑定模块按钮事件
+  container.querySelectorAll('.fb').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeModule = btn.dataset.module;
+      applyFilter();
+    });
+  });
+}
+
+// 应用筛选
+function applyFilter() {
+  let shown = 0, total = 0;
+  document.querySelectorAll('.tbl-card').forEach(card => {
+    total++;
+    const deptMatch = !activeDept || card.dataset.dept === activeDept;
+    const modMatch  = !activeModule || card.dataset.module === activeModule;
+    if (deptMatch && modMatch) { card.classList.remove('hidden'); shown++; }
+    else card.classList.add('hidden');
+  });
+  // 隐藏没有可见卡片的 section（详细字段区块）
+  document.querySelectorAll('#agri, #factory').forEach(sec => {
+    const hasVisible = [...sec.querySelectorAll('.tbl-card')].some(c => !c.classList.contains('hidden'));
+    sec.style.display = hasVisible ? '' : 'none';
+  });
+  document.getElementById('filterCount').textContent = `显示 ${shown} / ${total} 张表`;
+}
+
+// 部门按钮事件
+document.querySelectorAll('#filterBar [data-dept]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#filterBar [data-dept]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeDept = btn.dataset.dept;
+    activeModule = '';
+    renderModuleButtons(activeDept);
+    applyFilter();
+  });
+});
+
+// 初始化模块按钮
+renderModuleButtons('');
+</script>
+</body>
+</html>

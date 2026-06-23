@@ -1,0 +1,6082 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>指标清单汇报</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #1f2933;
+      --muted: #64748b;
+      --line: #d9dee7;
+      --head: #edf3f8;
+      --accent: #1b6b5f;
+      --accent-2: #c98a1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 18px 28px 14px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    nav {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid #b7cbc7;
+      background: #f0f7f5;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    main {
+      padding: 22px 28px 42px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 22px;
+      overflow: hidden;
+    }
+    .section-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+    h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+    .note {
+      margin-top: 6px;
+      color: var(--muted);
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 14px;
+      padding: 18px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: #fff;
+    }
+    .card .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .card .value {
+      margin-top: 6px;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .talking {
+      padding: 16px 22px 20px;
+    }
+    .talking p {
+      margin: 0 0 10px;
+    }
+    .filters {
+      display: flex;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+      flex-wrap: wrap;
+    }
+    select, input {
+      height: 34px;
+      border: 1px solid #c7d0dc;
+      border-radius: 6px;
+      padding: 0 10px;
+      background: #fff;
+      min-width: 190px;
+    }
+    input { min-width: 280px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 8px 10px;
+      vertical-align: top;
+    }
+    th:last-child, td:last-child { border-right: 0; }
+    thead th {
+      background: var(--head);
+      font-weight: 700;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .num {
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .indicator {
+      font-weight: 700;
+      color: #111827;
+    }
+    tbody tr:hover td {
+      background: #fff8ea;
+    }
+    .table-wrap {
+      overflow: auto;
+      max-height: 72vh;
+    }
+    #detailTable th:nth-child(1), #detailTable td:nth-child(1) { min-width: 70px; }
+    #detailTable th:nth-child(2), #detailTable td:nth-child(2) { min-width: 90px; }
+    #detailTable th:nth-child(3), #detailTable td:nth-child(3) { min-width: 180px; }
+    #detailTable th:nth-child(4), #detailTable td:nth-child(4) { min-width: 230px; }
+    #detailTable th:nth-child(5), #detailTable td:nth-child(5) { min-width: 120px; }
+    #detailTable th:nth-child(6), #detailTable td:nth-child(6) { min-width: 170px; }
+    #detailTable th:nth-child(7), #detailTable td:nth-child(7) { min-width: 260px; }
+    #detailTable td:nth-child(-n+5) {
+      text-align: center;
+      vertical-align: middle;
+    }
+    #detailTable td[rowspan] {
+      text-align: center;
+      vertical-align: middle;
+    }
+    .footer {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 2px;
+    }
+    @media print {
+      header { position: static; }
+      nav, .filters { display: none; }
+      main { padding: 0; max-width: none; }
+      section { break-inside: avoid; border-radius: 0; }
+      .table-wrap { max-height: none; overflow: visible; }
+      thead th { position: static; }
+      body { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>报表指标清单汇报</h1>
+    <div class="subtitle">用于大会展示：说明当前已整理的报表范围、业务模块和指标内容，不做逐项口径评审。</div>
+    <nav>
+      <a href="#summary">汇总页面</a>
+      <a href="#detail">详细页面</a>
+      <a href="#talking">汇报说明</a>
+    </nav>
+  </header>
+  <main>
+    <section id="summary">
+      <div class="section-head">
+        <h2>汇总页面</h2>
+        <div class="note">先看整体范围：覆盖哪些部门、哪些业务模块、多少张表单、多少个指标。</div>
+      </div>
+      <div class="cards">
+        <div class="card"><div class="label">指标数量</div><div class="value">529</div></div>
+        <div class="card"><div class="label">报表数量</div><div class="value">27</div></div>
+        <div class="card"><div class="label">模块数量</div><div class="value">15</div></div>
+        <div class="card"><div class="label">覆盖部门</div><div class="value">2</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>部门</th>
+              <th>业务模块数量</th>
+              <th>报表数量</th>
+              <th>指标数量</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>农业</td>
+              <td class="num">10</td>
+              <td class="num">19</td>
+              <td class="num">289</td>
+            </tr>
+            <tr>
+              <td>工厂</td>
+              <td class="num">5</td>
+              <td class="num">8</td>
+              <td class="num">240</td>
+            </tr>
+            <tr>
+              <td><strong>合计</strong></td>
+              <td class="num"><strong>15</strong></td>
+              <td class="num"><strong>27</strong></td>
+              <td class="num"><strong>529</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>部门</th>
+              <th>业务模块</th>
+              <th>报表数量</th>
+              <th>指标数量</th>
+              <th>包含报表</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr>
+              <td>农业</td>
+              <td>仓库</td>
+              <td class="num">2</td>
+              <td class="num">29</td>
+              <td>园区油库出油监控、铲果工具每日库存监控</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>养护</td>
+              <td class="num">4</td>
+              <td class="num">42</td>
+              <td>养护工作统计、化肥库存统计、园区农药库存统计、施肥进度统计</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>出勤</td>
+              <td class="num">1</td>
+              <td class="num">18</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>损失</td>
+              <td class="num">1</td>
+              <td class="num">28</td>
+              <td>铲果损失检查表</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>机械</td>
+              <td class="num">2</td>
+              <td class="num">30</td>
+              <td>机械HM和油耗监控、设备状态与维修跟踪</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>苗区</td>
+              <td class="num">2</td>
+              <td class="num">36</td>
+              <td>每日运苗情况统计、苗区统计</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果</td>
+              <td class="num">2</td>
+              <td class="num">32</td>
+              <td>产量与目标完成统计、铲果工作记录</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td class="num">2</td>
+              <td class="num">33</td>
+              <td>Rotasi Panen 铲果周期、铲果周期分布统计</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td class="num">2</td>
+              <td class="num">33</td>
+              <td>TBS送厂运输明细、当天铲果运输计划表</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>降雨</td>
+              <td class="num">1</td>
+              <td class="num">8</td>
+              <td>降雨量日报</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>分级</td>
+              <td class="num">1</td>
+              <td class="num">40</td>
+              <td>Laporan Gradding 分级报告</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>发货</td>
+              <td class="num">1</td>
+              <td class="num">34</td>
+              <td>工厂产品发货统计表</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>地磅</td>
+              <td class="num">1</td>
+              <td class="num">16</td>
+              <td>地榜单</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>库存</td>
+              <td class="num">2</td>
+              <td class="num">27</td>
+              <td>工业药剂消耗、工厂产品库存统计表</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>生产</td>
+              <td class="num">3</td>
+              <td class="num">123</td>
+              <td>KCP生产绩效指标、POM生产绩效指标、精炼与包装生产绩效指标</td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>报表清单</h2>
+        <div class="note">按报表展示每张表的用途和指标数量，便于会议上快速定位业务范围。</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>部门</th>
+              <th>业务模块</th>
+              <th>报表名称</th>
+              <th>报表用途</th>
+              <th>指标数量</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr>
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td class="num">21</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td class="num">8</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td class="num">12</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td class="num">12</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>养护</td>
+              <td>园区农药库存统计</td>
+              <td>-</td>
+              <td class="num">6</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td class="num">12</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td class="num">18</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td class="num">28</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td class="num">10</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td class="num">20</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td class="num">12</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td class="num">24</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td class="num">18</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td class="num">14</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td class="num">13</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td class="num">20</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td class="num">16</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td class="num">17</td>
+            </tr>
+            
+            <tr>
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td class="num">8</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td class="num">40</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td class="num">34</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td class="num">16</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td class="num">10</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td class="num">17</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td class="num">39</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td class="num">47</td>
+            </tr>
+            
+            <tr>
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td class="num">37</td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="detail">
+      <div class="section-head">
+        <h2>详细页面</h2>
+        <div class="note">明细只展示指标名称和含义，用于说明“有哪些指标”，不在大会上逐条确认。</div>
+      </div>
+      <div class="filters">
+        <select id="deptFilter">
+          <option value="">全部部门</option>
+          <option value="农业">农业（289）</option><option value="工厂">工厂（240）</option>
+        </select>
+        <select id="moduleFilter">
+          <option value="">全部模块</option>
+          <option value="仓库">仓库（29）</option><option value="养护">养护（42）</option><option value="出勤">出勤（18）</option><option value="分级">分级（40）</option><option value="发货">发货（34）</option><option value="地磅">地磅（16）</option><option value="库存">库存（27）</option><option value="损失">损失（28）</option><option value="机械">机械（30）</option><option value="生产">生产（123）</option><option value="苗区">苗区（36）</option><option value="铲果">铲果（32）</option><option value="铲果周期">铲果周期（33）</option><option value="铲果运输">铲果运输（33）</option><option value="降雨">降雨（8）</option>
+        </select>
+        <input id="keywordFilter" type="search" placeholder="搜索报表、指标或含义" />
+      </div>
+      <div class="table-wrap">
+        <table id="detailTable">
+          <thead>
+            <tr>
+              <th>部门</th>
+              <th>业务模块</th>
+              <th>报表名称</th>
+              <th>报表用途</th>
+              <th>指标分类</th>
+              <th>指标名称</th>
+              <th>指标含义</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>基础信息</td>
+              <td class="indicator">统计日期</td>
+              <td>报表对应的日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>基础信息</td>
+              <td class="indicator">园区</td>
+              <td>施肥作业所属园区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>基础信息</td>
+              <td class="indicator">小区</td>
+              <td>施肥作业所属小区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>每日计划</td>
+              <td class="indicator">当日目标施肥量</td>
+              <td>当天计划完成的施肥重量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>每日计划</td>
+              <td class="indicator">当日实际施肥量</td>
+              <td>当天实际完成的施肥重量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>每日计划</td>
+              <td class="indicator">当日施肥完成率</td>
+              <td>当日实际施肥量 / 当日目标施肥量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>截至当日</td>
+              <td class="indicator">截至当日累计目标施肥量</td>
+              <td>从月初到统计日应完成的累计施肥量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>截至当日</td>
+              <td class="indicator">截至当日累计实际施肥量</td>
+              <td>从月初到统计日实际完成的累计施肥量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>截至当日</td>
+              <td class="indicator">累计施肥完成率</td>
+              <td>累计实际施肥量 / 累计目标施肥量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>月度计划</td>
+              <td class="indicator">本月目标施肥面积</td>
+              <td>本月计划施肥面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>月度计划</td>
+              <td class="indicator">本月目标施肥量</td>
+              <td>本月计划施肥重量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>施肥进度统计</td>
+              <td>本月施肥目标和实际完成情况</td>
+              <td>月度计划</td>
+              <td class="indicator">本月目标完成率</td>
+              <td>截至统计日累计实际施肥量 / 本月目标施肥量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">统计日期</td>
+              <td>库存统计日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td>库存所属园区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">物料编码</td>
+              <td>SAP 中的化肥物料编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">园区代码</td>
+              <td>SAP系统中的园区编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">物料类型编码</td>
+              <td>系统中的物料分类编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">物料名称</td>
+              <td>化肥名称或物料描述</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">单位</td>
+              <td>库存计量单位，如 KG、Ton、Bag</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">工厂库存</td>
+              <td>存放在工厂的化肥库存数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">G10库存</td>
+              <td>G10库位的化肥库存数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">园区库存</td>
+              <td>园区仓库或现场库存数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">化肥总库存</td>
+              <td>各库位库存合计</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>化肥库存统计</td>
+              <td>每种化肥的库存日报</td>
+              <td>-</td>
+              <td class="indicator">当日出库量</td>
+              <td>当日从库存发出的化肥数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>-</td>
+              <td class="indicator">统计日期</td>
+              <td>报表对应日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td>养护作业所属园区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>-</td>
+              <td class="indicator">小区</td>
+              <td>养护作业所属小区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>-</td>
+              <td class="indicator">养护面积</td>
+              <td>当前小区对应养护面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>Actual Pruning (Ha) 铲叶</td>
+              <td class="indicator">铲叶当日完成面积</td>
+              <td>当日完成铲叶作业的面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>Actual Pruning (Ha) 铲叶</td>
+              <td class="indicator">铲叶累计完成面积</td>
+              <td>月初至统计日累计完成的铲叶面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>Actual CPT (Ha) 全面除草（圆盘、果道、果台）</td>
+              <td class="indicator">全面除草当日完成面积</td>
+              <td>当日完成全面除草的面积，包括圆盘、果道、果台</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>Actual CPT (Ha) 全面除草（圆盘、果道、果台）</td>
+              <td class="indicator">全面除草累计完成面积</td>
+              <td>月初至统计日累计完成的全面除草面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>Actual Lalang Control (Ha) Lalang控制</td>
+              <td class="indicator">Lalang控制当日完成面积</td>
+              <td>当日完成 Lalang 杂草控制的面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>Actual Lalang Control (Ha) Lalang控制</td>
+              <td class="indicator">Lalang控制累计完成面积</td>
+              <td>月初至统计日累计完成的 Lalang 控制面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>Actual Selektif Spraying (Ha) 选择打药</td>
+              <td class="indicator">选择性打药当日完成面积</td>
+              <td>当日完成选择性喷药的面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>养护工作统计</td>
+              <td>-</td>
+              <td>Actual Selektif Spraying (Ha) 选择打药</td>
+              <td class="indicator">选择性打药累计完成面积</td>
+              <td>月初至统计日累计完成的选择性喷药面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>园区农药库存统计</td>
+              <td>-</td>
+              <td>Actual Selektif Spraying (Ha) 选择打药</td>
+              <td class="indicator">物料编码</td>
+              <td>农药物料编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>园区农药库存统计</td>
+              <td>-</td>
+              <td>Actual Selektif Spraying (Ha) 选择打药</td>
+              <td class="indicator">园区代码</td>
+              <td>系统中的园区编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>园区农药库存统计</td>
+              <td>-</td>
+              <td>Actual Selektif Spraying (Ha) 选择打药</td>
+              <td class="indicator">物料类型编码</td>
+              <td>农药物料分类编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>园区农药库存统计</td>
+              <td>-</td>
+              <td>Actual Selektif Spraying (Ha) 选择打药</td>
+              <td class="indicator">物料名称</td>
+              <td>农药名称或物料描述</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>园区农药库存统计</td>
+              <td>-</td>
+              <td>Actual Selektif Spraying (Ha) 选择打药</td>
+              <td class="indicator">单位</td>
+              <td>库存计量单位，如 L、KG、Bottle</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="养护">
+              <td>农业</td>
+              <td>养护</td>
+              <td>园区农药库存统计</td>
+              <td>-</td>
+              <td>Actual Selektif Spraying (Ha) 选择打药</td>
+              <td class="indicator">农药库存数量</td>
+              <td>当前农药库存数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>基础信息</td>
+              <td class="indicator">统计日期</td>
+              <td>出勤统计对应日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>基础信息</td>
+              <td class="indicator">公司</td>
+              <td>所属公司</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>基础信息</td>
+              <td class="indicator">园区</td>
+              <td>所属园区或管理区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>基础信息</td>
+              <td class="indicator">小区</td>
+              <td>所属小区 / Afdeling</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">工种</td>
+              <td>铲果工，养护工</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">管理面积</td>
+              <td>该工种对应的作业面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">需求人数</td>
+              <td>按作业面积或标准测算所需人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">自有员工人数</td>
+              <td>当日在职的自有员工人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">承包商员工人数</td>
+              <td>当日在职的承包商员工人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">人员差额</td>
+              <td>实际人数 - 需求人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">自有员工出勤人数</td>
+              <td>当日实际到岗的自有员工人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">承包商出勤人数</td>
+              <td>当日实际到岗的承包商员工人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">总出勤人数</td>
+              <td>自有出勤 + 承包商出勤</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">出勤率</td>
+              <td>总出勤人数 / 在职人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">请假人数</td>
+              <td>已批准请假的人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">休假人数</td>
+              <td>休假人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">生病人数</td>
+              <td>因病未出勤人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="出勤">
+              <td>农业</td>
+              <td>出勤</td>
+              <td>养护工&amp;铲果工 出勤统计表</td>
+              <td>今日养护工&amp;铲果工的出勤情况</td>
+              <td>出勤情况</td>
+              <td class="indicator">旷工人数</td>
+              <td>未请假且未出勤人数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>基础信息</td>
+              <td class="indicator">统计日期</td>
+              <td>铲果统计对应日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>基础信息</td>
+              <td class="indicator">园区</td>
+              <td>铲果园区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>基础信息</td>
+              <td class="indicator">小区</td>
+              <td>铲果小区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>基础信息</td>
+              <td class="indicator">成熟面积</td>
+              <td>可铲果的成熟油棕面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>基础信息</td>
+              <td class="indicator">BBC</td>
+              <td>黑果普查预计产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>AKP完成率</td>
+              <td class="indicator">AKP密度</td>
+              <td>通过采样统计</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>AKP完成率</td>
+              <td class="indicator">AKP预计铲果面积</td>
+              <td>根据 AKP 预计当天应铲果面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>AKP完成率</td>
+              <td class="indicator">AKP预计产量</td>
+              <td>根据 AKP 计算的当天预计产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>AKP完成率</td>
+              <td class="indicator">当日实际产量</td>
+              <td>当天实际铲果产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>AKP完成率</td>
+              <td class="indicator">当日产量完成率</td>
+              <td>当日实际产量 / AKP预计产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>AKP完成率</td>
+              <td class="indicator">月累计实际产量</td>
+              <td>月初至统计日累计铲果产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>BBC完成率</td>
+              <td class="indicator">月度BBC目标产量</td>
+              <td>本月 BBC 目标产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>BBC完成率</td>
+              <td class="indicator">BBC目标完成率</td>
+              <td>月累计实际产量 / 月度BBC目标</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>BBC完成率</td>
+              <td class="indicator">BBC剩余目标产量</td>
+              <td>月度BBC目标 - 月累计实际产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>预算完成率</td>
+              <td class="indicator">月度预算产量</td>
+              <td>本月预算目标产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>预算完成率</td>
+              <td class="indicator">预算完成率</td>
+              <td>月累计实际产量 / 月度预算产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>预算完成率</td>
+              <td class="indicator">预算剩余目标产量</td>
+              <td>月度预算产量 - 月累计实际产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>产量与目标完成统计</td>
+              <td>日产量和AKP预计产量对比 月产量和目标BBC还有预算对比</td>
+              <td>-</td>
+              <td class="indicator">月剩余天数</td>
+              <td>统计日后本月剩余天数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">统计日期</td>
+              <td>数据记录日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">小区</td>
+              <td>作业小区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">铲果单日期</td>
+              <td>OPH 铲果单对应日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">铲果单号</td>
+              <td>铲果单编号</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">员工编码</td>
+              <td>铲果工员工编号</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">铲果工姓名</td>
+              <td>执行铲果的员工姓名</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">记录人</td>
+              <td>录入或记录该作业的人</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">地块</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">果台</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">果串数</td>
+              <td>果串数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">散果量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">作业位置</td>
+              <td>经纬度或定位信息</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">核对结果</td>
+              <td>果串数和图片核对结果</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果">
+              <td>农业</td>
+              <td>铲果</td>
+              <td>铲果工作记录</td>
+              <td>从Smart Salary中提取果台图片等铲果信息，和果串数核对</td>
+              <td>-</td>
+              <td class="indicator">果台照片</td>
+              <td>果台上的果串和果粒照片</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>地块信息</td>
+              <td class="indicator">统计月份</td>
+              <td>铲果周期统计月份</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>地块信息</td>
+              <td class="indicator">地块编号</td>
+              <td>统计对象地块</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>地块信息</td>
+              <td class="indicator">成熟阶段</td>
+              <td>TM,scout</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>地块信息</td>
+              <td class="indicator">种植年份</td>
+              <td>棕榈树种植年份</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>地块信息</td>
+              <td class="indicator">地块面积</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>地块信息</td>
+              <td class="indicator">棕榈棵数</td>
+              <td>地块内棕榈树数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>地块信息</td>
+              <td class="indicator">SPH</td>
+              <td>平均每公顷多少棵棕榈树</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>地块信息</td>
+              <td class="indicator">YPH</td>
+              <td>从跨年度初开始，累积的平均单公顷产量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>当月铲果周期信息</td>
+              <td class="indicator">上月末未铲果天数</td>
+              <td>上月末该地块距上次铲果的天数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>当月铲果周期信息</td>
+              <td class="indicator">当日未铲果天数</td>
+              <td>当天该地块距上次铲果的天数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>当月铲果周期信息</td>
+              <td class="indicator">本轮铲果面积</td>
+              <td>本轮已铲果面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>当月铲果周期信息</td>
+              <td class="indicator">累计铲果面积</td>
+              <td>本月累计铲果面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>Rotasi Panen 铲果周期</td>
+              <td>记录每个地块的铲果周期，指导铲果工作</td>
+              <td>当月铲果周期信息</td>
+              <td class="indicator">铲果轮次数</td>
+              <td>本月该地块完成铲果轮次</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>-</td>
+              <td class="indicator">统计日期</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>-</td>
+              <td class="indicator">小区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>-</td>
+              <td class="indicator">总面积</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>-</td>
+              <td class="indicator">地块总数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(08) DAY</td>
+              <td class="indicator">8天未铲果面积</td>
+              <td>铲果周期小于8天的地块总共多少面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(08) DAY</td>
+              <td class="indicator">8天未铲果地块数</td>
+              <td>多少个地块</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(08) DAY</td>
+              <td class="indicator">8天未铲果面积占比</td>
+              <td>占总地块面积的百分比</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(9-10) DAY</td>
+              <td class="indicator">9-10天未铲果面积</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(9-10) DAY</td>
+              <td class="indicator">9-10天未铲果地块数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(9-10) DAY</td>
+              <td class="indicator">9-10天未铲果面积占比</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(11-15) DAY</td>
+              <td class="indicator">11-15天未铲果面积</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(11-15) DAY</td>
+              <td class="indicator">11-15天未铲果地块数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(11-15) DAY</td>
+              <td class="indicator">11-15天未铲果面积占比</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(16-20) DAY</td>
+              <td class="indicator">16-20天未铲果面积</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(16-20) DAY</td>
+              <td class="indicator">16-20天未铲果地块数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(16-20) DAY</td>
+              <td class="indicator">16-20天未铲果面积占比</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(21-25) DAY</td>
+              <td class="indicator">21-25天未铲果面积</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(21-25) DAY</td>
+              <td class="indicator">21-25天未铲果地块数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果周期">
+              <td>农业</td>
+              <td>铲果周期</td>
+              <td>铲果周期分布统计</td>
+              <td>不同铲果周期地块的统计</td>
+              <td>Blok &lt;(21-25) DAY</td>
+              <td class="indicator">21-25天未铲果面积占比</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">统计日期</td>
+              <td>TBS运输记录日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td>TBS来源园区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">送达工厂</td>
+              <td>TBS送达的工厂</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">运输车次编号</td>
+              <td>当日第几车或第几趟运输</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">司机姓名</td>
+              <td>执行运输的司机</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">车牌号</td>
+              <td>运输车辆车牌</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">车辆编号</td>
+              <td>园区内部车辆编号</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">来源小区</td>
+              <td>TBS来源小区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">No. SPB</td>
+              <td>送果单编号</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">果串数量</td>
+              <td>本车运输的果串数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">果粒重量</td>
+              <td>本车运输的散果重量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">装车封签完成时间</td>
+              <td>发货时间</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">离开安检岗时间</td>
+              <td>车辆从 Security 岗出发时间</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">PKS过磅时间</td>
+              <td>车辆到工厂地磅称重时间</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">过磅重量</td>
+              <td>工厂地磅称出的 TBS 重量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>TBS送厂运输明细</td>
+              <td>记录发果车次的信息</td>
+              <td>-</td>
+              <td class="indicator">运输备注</td>
+              <td>运输异常、票据、车辆或其他说明</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">统计日期</td>
+              <td>计划统计日期</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">公司</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">园区/Rayon</td>
+              <td>来源园区或管理片区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">Div. 小区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">铲果面积</td>
+              <td>可铲果的成熟面积</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">AKP</td>
+              <td>用于估算当日采收量的 AKP 指标</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>剩果</td>
+              <td class="indicator">H+1剩果量</td>
+              <td>前一日未运输/未处理的剩果量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>剩果</td>
+              <td class="indicator">H+2剩果量</td>
+              <td>两日前未运输/未处理的剩果量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>剩果</td>
+              <td class="indicator">H+3剩果量</td>
+              <td>三日前未运输/未处理的剩果量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>剩果</td>
+              <td class="indicator">剩果合计</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">当日预计铲果量</td>
+              <td>当天预计铲果并需要运输的果串重量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">当日预计运输总量</td>
+              <td>剩果合计 + 当日预计铲果量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">预计运输车次</td>
+              <td>当日预计需要运输的车次数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">预计送厂时间</td>
+              <td>预计发车或送达工厂时间</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">当日预计铲果面积</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">当日铲果地块记录</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="铲果运输">
+              <td>农业</td>
+              <td>铲果运输</td>
+              <td>当天铲果运输计划表</td>
+              <td>计划当天铲果量、运输量以及剩果运输量</td>
+              <td>-</td>
+              <td class="indicator">剩果说明</td>
+              <td>剩果位置、原因或补充说明</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">统计日期</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">设备类别</td>
+              <td>重型设备、中型设备、小型设备等</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">设备编号</td>
+              <td>设备的园区内部编号</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">设备类型</td>
+              <td>EX/TR/DT</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">设备型号</td>
+              <td>Hitachi等</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">购买时间 Tgl Pembelian</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>司机</td>
+              <td class="indicator">第一班司机</td>
+              <td>司机名字</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>司机</td>
+              <td class="indicator">第二班司机</td>
+              <td>司机名字</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>司机</td>
+              <td class="indicator">第三班司机</td>
+              <td>司机名字</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">设备是否正常</td>
+              <td>设备是否损坏。正常标注：√，否则标注：×</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">当日是否作业</td>
+              <td>工作标注：√，否则标注：×</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">损坏情况</td>
+              <td>设备故障或损坏描述</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>维修地点</td>
+              <td class="indicator">维修地点</td>
+              <td>车间，现场</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">故障发生时间</td>
+              <td>设备出现故障的时间</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">预计修复时间</td>
+              <td>预计完成维修的时间</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">维修状态</td>
+              <td>待修/维修中/已完成</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">停机天数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>-</td>
+              <td class="indicator">备注 Keterangan</td>
+              <td>为未工作的备注说明信息</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>设备状态与维修跟踪</td>
+              <td>设备状态监测</td>
+              <td>P2H</td>
+              <td class="indicator">保养</td>
+              <td>是否有每日监控和保养，有的打：√，没有的打：×</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>-</td>
+              <td class="indicator">月份</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>-</td>
+              <td class="indicator">设备类型</td>
+              <td>重/中/轻</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>-</td>
+              <td class="indicator">设备编号</td>
+              <td>设备的园区内部编号</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>每日记录</td>
+              <td class="indicator">HM</td>
+              <td>重型机械：工作量 卡车：里程</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>每日记录</td>
+              <td class="indicator">油耗</td>
+              <td>对应HM的油耗</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>总计</td>
+              <td class="indicator">总计HM</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>总计</td>
+              <td class="indicator">总计油耗</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>-</td>
+              <td class="indicator">单升作业量</td>
+              <td>重型机械：HM/油耗 卡车：里程/油耗</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>-</td>
+              <td class="indicator">Kalibrasi</td>
+              <td>审计校准值，校准时放空油箱。加入指定量的油，跟据这些油用完的工作量来计算：工作量/油耗。重型机械差异可能较大（测量时，跟据机械在做重活/轻活，是有差异的）</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="机械">
+              <td>农业</td>
+              <td>机械</td>
+              <td>机械HM和油耗监控</td>
+              <td>统计机械每个工作单位的耗油量，之后通过审计进行校准。校准后可以把工作量对标加油量，防止加有过多的问题</td>
+              <td>-</td>
+              <td class="indicator">Varian (Act Vs kalibrasi)</td>
+              <td>差异</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>-</td>
+              <td class="indicator">检查日期</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>-</td>
+              <td class="indicator">小区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>-</td>
+              <td class="indicator">地块</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>-</td>
+              <td class="indicator">检查人员</td>
+              <td>执行损失检查的质检人员</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>-</td>
+              <td class="indicator">BJR平均果重/Kg</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>铲果数量</td>
+              <td class="indicator">铲果串数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>铲果数量</td>
+              <td class="indicator">铲果重量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>果串损失</td>
+              <td class="indicator">损失果串数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>果串损失</td>
+              <td class="indicator">损失果串重量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>果粒损失</td>
+              <td class="indicator">损失果粒数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>果粒损失</td>
+              <td class="indicator">损失果粒重量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>总损失率</td>
+              <td class="indicator">果串损失率</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>总损失率</td>
+              <td class="indicator">果粒损失率</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>总损失率</td>
+              <td class="indicator">总损失率</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>损失率变化</td>
+              <td class="indicator">上次铲果损失率</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>损失率变化</td>
+              <td class="indicator">损失率变化</td>
+              <td>本次损失率-上次损失率</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>说明</td>
+              <td class="indicator">↑↓</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>说明</td>
+              <td class="indicator">Turun 下降/ Naik 上升</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>沟内果</td>
+              <td class="indicator">沟内遗留果果串数</td>
+              <td>掉沟里的果的数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>沟内果</td>
+              <td class="indicator">沟内遗留果重量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>树上的坏果</td>
+              <td class="indicator">树上腐烂果果串数</td>
+              <td>树上的烂果数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>树上的坏果</td>
+              <td class="indicator">树上腐烂果重量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>鲜果粒</td>
+              <td class="indicator">新鲜果粒数</td>
+              <td>新鲜的果粒数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>鲜果粒</td>
+              <td class="indicator">新鲜果粒重量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>黑果粒</td>
+              <td class="indicator">黑果粒数</td>
+              <td>黑果粒数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>黑果粒</td>
+              <td class="indicator">黑果粒重量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="损失">
+              <td>农业</td>
+              <td>损失</td>
+              <td>铲果损失检查表</td>
+              <td>QC检查的损失情况</td>
+              <td>-</td>
+              <td class="indicator">Rangking Losses Terengdah 排名</td>
+              <td>铲果地块损失排名</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="降雨">
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td>-</td>
+              <td class="indicator">日期</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="降雨">
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="降雨">
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td>降雨量</td>
+              <td class="indicator">当日降雨量</td>
+              <td>当日实际降雨量，单位毫米</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="降雨">
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td>降雨量</td>
+              <td class="indicator">月累计降雨量</td>
+              <td>月初至统计日累计降雨量，单位毫米</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="降雨">
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td>降雨时间</td>
+              <td class="indicator">降雨开始时间</td>
+              <td>当日降雨开始时间</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="降雨">
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td>降雨时间</td>
+              <td class="indicator">降雨结束时间</td>
+              <td>当日降雨结束时间</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="降雨">
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td>-</td>
+              <td class="indicator">降雨持续时间</td>
+              <td>降雨总持续分钟数</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="降雨">
+              <td>农业</td>
+              <td>降雨</td>
+              <td>降雨量日报</td>
+              <td>累计统计该月降雨情况</td>
+              <td>-</td>
+              <td class="indicator">降雨备注</td>
+              <td>大雨、小雨、未下雨或其他天气说明</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">日期</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>早晨</td>
+              <td class="indicator">Tangki 1 测量值</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>早晨</td>
+              <td class="indicator">Tangki 2 测量值</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>早晨</td>
+              <td class="indicator">Tangki 1 库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>早晨</td>
+              <td class="indicator">Tangki 2 库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>早晨</td>
+              <td class="indicator">桶装油库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>早晨</td>
+              <td class="indicator">总计库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">Tangki 1 测量值</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">Tangki 2 测量值</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">Tangki 1 库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">Tangki 2 库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">桶装油库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">总计库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">SAP账面库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">实际与SAP的差异</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>下午</td>
+              <td class="indicator">入库量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>出库量</td>
+              <td class="indicator">实际出库量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>出库量</td>
+              <td class="indicator">系统出库量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">实际和系统的出库量差异</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>园区油库出油监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">Selisih Pengeluaran POM mini(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">物料编码</td>
+              <td>工具或物资编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">园区代码</td>
+              <td>所属园区的系统编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">物料类型编码</td>
+              <td>工具物料分类编码</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">物料组</td>
+              <td>工具或物资所属物料组</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">库位</td>
+              <td>工具存放库位</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">物料名称</td>
+              <td>工具或物资名称</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">单位</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="仓库">
+              <td>农业</td>
+              <td>仓库</td>
+              <td>铲果工具每日库存监控</td>
+              <td>统计每天的油罐情况和用油情况</td>
+              <td>-</td>
+              <td class="indicator">实物库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">园区</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">种子品种</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">种植日期</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">地块</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">正常苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">双株苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">淘汰苗数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">淘汰百分比</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">剩余苗数</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">小苗阶段期末库存</td>
+              <td>小苗阶段结束时剩余棕榈苗数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">2025-08-27淘汰苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">2025-08-28苗库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">2025-10-21淘汰苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">截至当前累计淘汰苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">截至当前累计淘汰率</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">2025-10-22苗库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">截至2025-12-31出苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">2025-12-31苗库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">2026-01-27淘汰苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">截至当前累计淘汰苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">截至当前累计淘汰率</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">2026-01-27苗库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">截至2026-05-04出苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>苗区统计</td>
+              <td>统计当前苗区从开始种植到现在的情况</td>
+              <td>-</td>
+              <td class="indicator">2026-05-04苗库存</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>-</td>
+              <td class="indicator">日期</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>园区（GMU/MAE/LLE/SNE</td>
+              <td class="indicator">运苗用途</td>
+              <td>棕榈苗运出后的用途</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>园区（GMU/MAE/LLE/SNE</td>
+              <td class="indicator">目的园区</td>
+              <td>棕榈苗运往的园区</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>园区（GMU/MAE/LLE/SNE</td>
+              <td class="indicator">目的地块</td>
+              <td>棕榈苗运往的地块</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>园区（GMU/MAE/LLE/SNE</td>
+              <td class="indicator">MRIS运输单号</td>
+              <td>运苗对应的 MRIS 单号</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>园区（GMU/MAE/LLE/SNE</td>
+              <td class="indicator">当日运苗数量</td>
+              <td>当日运往对应地块的苗数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>园区（GMU/MAE/LLE/SNE</td>
+              <td class="indicator">累计运苗数量</td>
+              <td>累计数量</td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>其他运苗</td>
+              <td class="indicator">运苗目的</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>其他运苗</td>
+              <td class="indicator">当日运苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>其他运苗</td>
+              <td class="indicator">累计运苗数量</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Total Angkut</td>
+              <td class="indicator">今日总计运苗</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="农业" data-module="苗区">
+              <td>农业</td>
+              <td>苗区</td>
+              <td>每日运苗情况统计</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Total Angkut</td>
+              <td class="indicator">历史累计运苗</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">统计日期</td>
+              <td>报表日期</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">月份</td>
+              <td>统计月份</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">统计周期</td>
+              <td>Today/Monthly</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">工厂</td>
+              <td>工厂名称</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">负责人</td>
+              <td>填报或负责人员</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB收果</td>
+              <td class="indicator">自有园收果-扣重前</td>
+              <td>自有园鲜果串扣重前重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB收果</td>
+              <td class="indicator">自有园收果-扣重后</td>
+              <td>自有园鲜果串扣重后重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB收果</td>
+              <td class="indicator">Plasma收果-扣重前</td>
+              <td>Plasma鲜果串扣重前重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB收果</td>
+              <td class="indicator">Plasma收果-扣重后</td>
+              <td>Plasma鲜果串扣重后重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB收果</td>
+              <td class="indicator">集团收果-扣重前</td>
+              <td>集团/关联公司鲜果串扣重前重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB收果</td>
+              <td class="indicator">集团收果-扣重后</td>
+              <td>集团/关联公司鲜果串扣重后重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB收果</td>
+              <td class="indicator">外部收果-扣重前</td>
+              <td>外部采购鲜果串扣重前重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB收果</td>
+              <td class="indicator">外部收果-扣重后</td>
+              <td>外部采购鲜果串扣重后重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB加工</td>
+              <td class="indicator">FFB加工量-扣重前</td>
+              <td>鲜果串加工量扣重前</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB加工</td>
+              <td class="indicator">FFB加工量-扣重后</td>
+              <td>鲜果串加工量扣重后</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>FFB结余</td>
+              <td class="indicator">FFB结余</td>
+              <td>未加工剩余鲜果串</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO产出</td>
+              <td class="indicator">CPO产量</td>
+              <td>毛棕油产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO产出</td>
+              <td class="indicator">纯CPO出油率-扣重前</td>
+              <td>不含PAO口径的CPO出油率-扣重前</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO产出</td>
+              <td class="indicator">纯CPO出油率-扣重后</td>
+              <td>不含PAO口径的CPO出油率-扣重后</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO产出</td>
+              <td class="indicator">CPO+PAO出油率-扣重前</td>
+              <td>CPO加PAO口径出油率-扣重前</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO产出</td>
+              <td class="indicator">CPO+PAO出油率-扣重后</td>
+              <td>CPO加PAO口径出油率-扣重后</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO质量</td>
+              <td class="indicator">CPO FFA</td>
+              <td>游离脂肪酸</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO质量</td>
+              <td class="indicator">CPO水分</td>
+              <td>CPO含水率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO质量</td>
+              <td class="indicator">CPO杂质</td>
+              <td>CPO杂质率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>CPO损耗</td>
+              <td class="indicator">CPO损耗率</td>
+              <td>CPO生产损耗率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Kernel产出</td>
+              <td class="indicator">Kernel产量</td>
+              <td>棕仁产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Kernel产出</td>
+              <td class="indicator">Kernel得率-扣重前</td>
+              <td>Kernel产量/FFB扣重前加工量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Kernel产出</td>
+              <td class="indicator">Kernel得率-扣重后</td>
+              <td>Kernel产量/FFB扣重后加工量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Kernel质量</td>
+              <td class="indicator">Kernel水分</td>
+              <td>棕仁含水率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Kernel质量</td>
+              <td class="indicator">Kernel杂质</td>
+              <td>棕仁杂质率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Kernel损耗</td>
+              <td class="indicator">Kernel损耗率</td>
+              <td>棕仁损耗率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Shell</td>
+              <td class="indicator">壳产量</td>
+              <td>棕壳产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>Shell</td>
+              <td class="indicator">壳得率</td>
+              <td>壳产量/FFB加工量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PAO</td>
+              <td class="indicator">PAO混入/调和量</td>
+              <td>PAO调和量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PAO</td>
+              <td class="indicator">PAO产量/用量</td>
+              <td>PAO产量或使用量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PAO</td>
+              <td class="indicator">PAO比例</td>
+              <td>PAO占比</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售</td>
+              <td class="indicator">CPO销售量</td>
+              <td>CPO销售数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售</td>
+              <td class="indicator">MIKO销售量</td>
+              <td>MIKO销售数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售</td>
+              <td class="indicator">PK/Kernel销售量</td>
+              <td>棕仁销售数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>成本</td>
+              <td class="indicator">每kg FFB成本</td>
+              <td>以FFB为分母的单位成本</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>运行</td>
+              <td class="indicator">加工小时</td>
+              <td>实际加工运行小时</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>运行</td>
+              <td class="indicator">小时处理量</td>
+              <td>加工量/加工小时</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>运行</td>
+              <td class="indicator">效率</td>
+              <td>工厂运行效率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>停机</td>
+              <td class="indicator">停机小时</td>
+              <td>故障或停机小时</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>停机</td>
+              <td class="indicator">停机率</td>
+              <td>停机小时/总可运行小时</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>停机</td>
+              <td class="indicator">停机说明</td>
+              <td>故障或停机原因说明</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>POM生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>备注</td>
+              <td class="indicator">备注</td>
+              <td>其他说明</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">统计日期</td>
+              <td>报表日期</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">月份</td>
+              <td>统计月份</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">统计周期</td>
+              <td>TodayMonthly</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">工厂</td>
+              <td>工厂名称</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">负责人</td>
+              <td>填报或负责人员</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK收料</td>
+              <td class="indicator">自有PK收料-扣重前</td>
+              <td>自有棕仁扣重前重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK收料</td>
+              <td class="indicator">自有PK收料-扣重后</td>
+              <td>自有棕仁扣重后重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK收料</td>
+              <td class="indicator">集团PK收料-扣重前</td>
+              <td>集团棕仁扣重前重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK收料</td>
+              <td class="indicator">集团PK收料-扣重后</td>
+              <td>集团棕仁扣重后重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK收料</td>
+              <td class="indicator">外部PK收料-扣重前</td>
+              <td>外部棕仁扣重前重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK收料</td>
+              <td class="indicator">外部PK收料-扣重后</td>
+              <td>外部棕仁扣重后重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK收料</td>
+              <td class="indicator">PK收料合计-扣重前</td>
+              <td>棕仁收料合计扣重前</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK收料</td>
+              <td class="indicator">PK收料合计-扣重后</td>
+              <td>棕仁收料合计扣重后</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK加工</td>
+              <td class="indicator">PK加工量-扣重前</td>
+              <td>棕仁加工量扣重前</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK加工</td>
+              <td class="indicator">PK加工量-扣重后</td>
+              <td>棕仁加工量扣重后</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PK结余</td>
+              <td class="indicator">PK结余</td>
+              <td>未加工棕仁结余</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKO/CPKO产出</td>
+              <td class="indicator">PKO/CPKO产量</td>
+              <td>棕仁油产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKO/CPKO产出</td>
+              <td class="indicator">PKO/CPKO出油率-扣重前</td>
+              <td>棕仁油产量/PK扣重前加工量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKO/CPKO产出</td>
+              <td class="indicator">PKO/CPKO出油率-扣重后</td>
+              <td>棕仁油产量/PK扣重后加工量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKO/CPKO质量</td>
+              <td class="indicator">PKO/CPKO FFA</td>
+              <td>棕仁油游离脂肪酸</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKO/CPKO质量</td>
+              <td class="indicator">PKO/CPKO水分</td>
+              <td>棕仁油含水率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKO/CPKO质量</td>
+              <td class="indicator">PKO/CPKO杂质</td>
+              <td>棕仁油杂质率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKO/CPKO损耗</td>
+              <td class="indicator">1号线油损</td>
+              <td>一号压榨线油损</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKO/CPKO损耗</td>
+              <td class="indicator">2号线油损</td>
+              <td>二号压榨线油损</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKE产出</td>
+              <td class="indicator">PKE产量</td>
+              <td>棕仁粕产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKE产出</td>
+              <td class="indicator">PKE袋数</td>
+              <td>棕仁粕袋装数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKE产出</td>
+              <td class="indicator">PKE得率-扣重前</td>
+              <td>PKE产量/PK扣重前加工量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKE产出</td>
+              <td class="indicator">PKE得率-扣重后</td>
+              <td>PKE产量/PK扣重后加工量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>PKE其他</td>
+              <td class="indicator">外部粗粕</td>
+              <td>外部粗粕数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售</td>
+              <td class="indicator">PKO销售量</td>
+              <td>PKO销售数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售</td>
+              <td class="indicator">PKE销售量</td>
+              <td>PKE销售数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>成本</td>
+              <td class="indicator">每kg PKB成本</td>
+              <td>以PKB为分母的单位成本</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>运行</td>
+              <td class="indicator">加工小时</td>
+              <td>实际加工运行小时</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>运行</td>
+              <td class="indicator">小时处理量</td>
+              <td>加工量/加工小时</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>运行</td>
+              <td class="indicator">效率</td>
+              <td>工厂运行效率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>停机</td>
+              <td class="indicator">停机小时</td>
+              <td>故障或停机小时</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>停机</td>
+              <td class="indicator">停机率</td>
+              <td>停机小时/总可运行小时</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>停机</td>
+              <td class="indicator">停机说明</td>
+              <td>故障或停机原因说明</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>KCP生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>备注</td>
+              <td class="indicator">备注</td>
+              <td>其他说明</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">统计日期</td>
+              <td>报表日期</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">月份</td>
+              <td>统计月份</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">统计周期</td>
+              <td>TodayMonthly</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">工厂</td>
+              <td>PT GIN等</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>基础维度</td>
+              <td class="indicator">负责人</td>
+              <td>填报或负责人员</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">CPO低酸原料</td>
+              <td>FFA小于5%的CPO投入量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">CPO高酸原料</td>
+              <td>FFA大于5%的CPO投入量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">CPKO原料</td>
+              <td>CPKO投入量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">Olein原料</td>
+              <td>包装/调和用Olein投入量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">Stearin原料</td>
+              <td>包装/调和用Stearin投入量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">RBDPO原料</td>
+              <td>包装/调和用RBDPO投入量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">RBDST罐区投入</td>
+              <td>来自罐区的RBDST投入量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">RBDPOL罐区投入</td>
+              <td>来自罐区的RBDPOL投入量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>原料投入</td>
+              <td class="indicator">原料投入合计</td>
+              <td>全部原料投入合计</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>精炼产出</td>
+              <td class="indicator">RBDPO产量</td>
+              <td>精炼棕榈油产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>精炼产出</td>
+              <td class="indicator">RBDPKO产量</td>
+              <td>精炼棕仁油产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>精炼产出</td>
+              <td class="indicator">PFAD产量</td>
+              <td>棕榈脂肪酸馏出物产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>精炼产出</td>
+              <td class="indicator">PKFAD产量</td>
+              <td>棕仁脂肪酸馏出物产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>分提产出</td>
+              <td class="indicator">RBDOL产量</td>
+              <td>精炼液油/Olein产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>分提产出</td>
+              <td class="indicator">RBDST产量</td>
+              <td>精炼硬脂/Stearin产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>包装产出</td>
+              <td class="indicator">Oilku 1L产量</td>
+              <td>1L包装油产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>包装产出</td>
+              <td class="indicator">Oilku 2L产量</td>
+              <td>2L包装油产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>产出汇总</td>
+              <td class="indicator">产品产量合计</td>
+              <td>全部产品产量合计</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>成本</td>
+              <td class="indicator">单位加工成本</td>
+              <td>精炼/包装单位成本</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>得率</td>
+              <td class="indicator">原料得率</td>
+              <td>产出/原料投入</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>备注</td>
+              <td class="indicator">备注</td>
+              <td>异常或补充说明</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">RBDPO销售量</td>
+              <td>RBDPO销售量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">RBDPO销售至PT.PU量</td>
+              <td>RBDPO销售至PT.PU的数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">RBDPO销售至PT.ASP量</td>
+              <td>RBDPO销售至PT.ASP的数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">RBDPKO销售量</td>
+              <td>RBDPKO销售量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">PFAD销售量</td>
+              <td>PFAD销售量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">PKFAD销售量</td>
+              <td>PKFAD销售量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">RBDOL销售量</td>
+              <td>RBDOL销售量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">RBDST销售量</td>
+              <td>RBDST销售量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">销售总量</td>
+              <td>全部产品销售量合计</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">OILKU 1 LTR销售量</td>
+              <td>OILKU 1升包装油销售量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="生产">
+              <td>工厂</td>
+              <td>生产</td>
+              <td>精炼与包装生产绩效指标</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">OILKU 2 LTR销售量</td>
+              <td>OILKU 2升包装油销售量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">No Ticket</td>
+              <td>票据号</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">In</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">Out</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">Trans</td>
+              <td>运输类型 内部/销售/采购等</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">Products</td>
+              <td>产品</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">Vehicles</td>
+              <td>车牌号</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">Customers</td>
+              <td>运输目标</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">Transporters</td>
+              <td>运输承担方</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">1st</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">2nd</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">Netto</td>
+              <td>净重</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">JJG</td>
+              <td>如果运输果串需要果串数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">Brondolan</td>
+              <td>如果运输果串需要果粒重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">BJR</td>
+              <td>平均果重</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">带出物品 BARANG KELUAR</td>
+              <td>一般带出为空果串</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="地磅">
+              <td>工厂</td>
+              <td>地磅</td>
+              <td>地榜单</td>
+              <td>累计统计每天的苗区运苗数量和用途</td>
+              <td>销售量</td>
+              <td class="indicator">备注</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>信息 Info</td>
+              <td class="indicator">PT</td>
+              <td>园区/公司</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>信息 Info</td>
+              <td class="indicator">日期 Tanggal</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>信息 Info</td>
+              <td class="indicator">编码 Kode</td>
+              <td>公司/园区代码</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>信息 Info</td>
+              <td class="indicator">区域 Estate</td>
+              <td>园区+小区</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>信息 Info</td>
+              <td class="indicator">车辆 Vehicle</td>
+              <td>车牌号/园区内部标识</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>信息 Info</td>
+              <td class="indicator">收果单编号 No.SPB</td>
+              <td>收果单，对应车次</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>信息 Info</td>
+              <td class="indicator">地块 Blok</td>
+              <td>在哪个地块收的果</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>信息 Info</td>
+              <td class="indicator">果串数 Janjang</td>
+              <td>总收果串数</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">生果 Unripe (%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">欠熟果 Under Ripe(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">熟果 Ripe(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">过熟果 Over Ripe (%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">空果串 Empty Bunch(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">刺猬果 Parthenocarpic(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">杜拉 Dura(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">果粒 Brondolan</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">长柄果 Long Stalk (%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">幼果 Buah &lt; 3 kg (%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级果串数 Grading JJG</td>
+              <td class="indicator">腐烂果 Rotten(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading 扣重 Sum POT</td>
+              <td class="indicator">理论 Teoritis (%)</td>
+              <td>理论计算出的扣重数量，这里表述应该有误，搞成了%</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading 扣重 Sum POT</td>
+              <td class="indicator">计算 Pemhitongan (%)</td>
+              <td>理论上的扣重百分比，扣重重量/扣重前重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading 扣重 Sum POT</td>
+              <td class="indicator">退回重量 REJ(KG)</td>
+              <td>退回果串的重量，地磅出的</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading 扣重 Sum POT</td>
+              <td class="indicator">退回比例 REJ (%)</td>
+              <td>退回重量占扣重前重量的百分比</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading 检查 Check</td>
+              <td class="indicator">分级单 Surat Grading (%)</td>
+              <td>等于扣重百分比</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading 检查 Check</td>
+              <td class="indicator">检查 Check</td>
+              <td>理论扣重和分级单扣重百分比的差异</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading</td>
+              <td class="indicator">取样果串数 JJG sample</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading</td>
+              <td class="indicator">分级前重量 Tonse BG</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>分级汇总 Sum Grading</td>
+              <td class="indicator">分级后重量 Tonse AG</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">总扣重 POT total(KG)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">生果 Unripe(KG)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">欠熟果 Under Ripe(KG)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">熟果 Ripe(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">过熟果 Over Ripe(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">空果串 Empty Bunch(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">刺猬果 Parthenocarpic(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">杜拉 Dura(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">果粒 Brondolan</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">长柄果 Long Stalk (%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">幼果 Buah &lt; 3 kg (%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="分级">
+              <td>工厂</td>
+              <td>分级</td>
+              <td>Laporan Gradding 分级报告</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>扣重计算 Pemhitongan POT</td>
+              <td class="indicator">腐烂果 Rotten(%)</td>
+              <td></td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>-</td>
+              <td class="indicator">TANGGAL</td>
+              <td>日期</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Water Treatment 水处理</td>
+              <td class="indicator">Caustic Soda</td>
+              <td>烧碱</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Water Treatment 水处理</td>
+              <td class="indicator">Alumunium sulfat</td>
+              <td>硫酸铝</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Water Treatment 水处理</td>
+              <td class="indicator">AERO ASC 1016</td>
+              <td>AERO ASC 1016药剂</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Water Treatment 水处理</td>
+              <td class="indicator">Garam</td>
+              <td>盐</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Water Treatment 水处理</td>
+              <td class="indicator">Polimer</td>
+              <td>聚合物</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Boiler Treament 锅炉水处理</td>
+              <td class="indicator">SCF</td>
+              <td>SCF药剂</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Boiler Treament 锅炉水处理</td>
+              <td class="indicator">OXIFITE</td>
+              <td>除氧剂/OXIFITE</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Boiler Treament 锅炉水处理</td>
+              <td class="indicator">GR</td>
+              <td>GR药剂</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工业药剂消耗</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>Boiler Treament 锅炉水处理</td>
+              <td class="indicator">PS 05</td>
+              <td>PS 05药剂</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">日期</td>
+              <td>库存统计日期</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">工厂</td>
+              <td>工厂名称</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">产品类型</td>
+              <td>CPO/PAO/CPKO/PKE/PK/RBDPO/RBDPKO等</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">产品规格</td>
+              <td>如Oilku 1L、Oilku 2L、PKE Bags等</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">储存位置</td>
+              <td>油罐/仓库/混合罐/缓冲罐/日用罐/成品仓</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">罐号/仓号</td>
+              <td>Tank No.1、Tank No.3等</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>库存</td>
+              <td class="indicator">罐容/仓容</td>
+              <td>最大储存容量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>库存</td>
+              <td class="indicator">实际库存</td>
+              <td>当前实际库存</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>库存</td>
+              <td class="indicator">库存单位</td>
+              <td>Kg/Ton/Bags/Carton</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>质量</td>
+              <td class="indicator">FFA</td>
+              <td>酸价/游离脂肪酸</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>质量</td>
+              <td class="indicator">水分</td>
+              <td>含水率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>质量</td>
+              <td class="indicator">杂质</td>
+              <td>杂质率</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>预测</td>
+              <td class="indicator">预计月底库存</td>
+              <td>预计月底剩余库存</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>预测</td>
+              <td class="indicator">下月产量预估</td>
+              <td>下月预计产量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>安全库存</td>
+              <td class="indicator">安全库存天数</td>
+              <td>当前库存可支撑天数</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>汇总</td>
+              <td class="indicator">产品库存合计</td>
+              <td>按产品汇总库存</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="库存">
+              <td>工厂</td>
+              <td>库存</td>
+              <td>工厂产品库存统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>备注</td>
+              <td class="indicator">备注</td>
+              <td>库存或质量异常说明</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">日期</td>
+              <td>发货日期</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">统计周期</td>
+              <td>Today/Monthly</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">工厂</td>
+              <td>工厂名称</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">产品类型</td>
+              <td>CPO/CPKO/PKE/PK/RBDPO/RBDPKO等</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">产品规格</td>
+              <td>如Oilku 1L、Oilku 2L、袋装/散装</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>基础维度</td>
+              <td class="indicator">客户/目的地</td>
+              <td>客户或发货目的地</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>辅助库存</td>
+              <td class="indicator">期初库存</td>
+              <td>用于判断可发货资源</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>辅助库存</td>
+              <td class="indicator">当期产量</td>
+              <td>当期新增可发货产品</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>辅助库存</td>
+              <td class="indicator">期末库存</td>
+              <td>发货后的剩余库存</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>合同</td>
+              <td class="indicator">合同量</td>
+              <td>合同总量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>合同</td>
+              <td class="indicator">合同剩余量</td>
+              <td>合同未发剩余量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">计划发货量</td>
+              <td>计划发运数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">今日发货量</td>
+              <td>当日发货数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">月累计发货量</td>
+              <td>本月截至今日累计发货量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">已发货量</td>
+              <td>合同已发货量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">剩余发货量</td>
+              <td>剩余待发货量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">发货完成率</td>
+              <td>已发货量/合同量或实际发货/计划发货</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">今日车次</td>
+              <td>当日发货车次</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">累计车次</td>
+              <td>累计发货车次</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>发货汇总</td>
+              <td class="indicator">平均单车发货量</td>
+              <td>发货量/车次</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>车次明细</td>
+              <td class="indicator">车次时间</td>
+              <td>单车发货时间</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>车次明细</td>
+              <td class="indicator">进厂时间</td>
+              <td>车辆进厂时间</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>车次明细</td>
+              <td class="indicator">出厂时间</td>
+              <td>车辆出厂时间</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>车次明细</td>
+              <td class="indicator">车牌号</td>
+              <td>车辆牌照</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>车次明细</td>
+              <td class="indicator">铅封号</td>
+              <td>铅封号</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>车次明细</td>
+              <td class="indicator">运输公司</td>
+              <td>承包商/运输公司</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>车次明细</td>
+              <td class="indicator">单车发货重量</td>
+              <td>单车发货重量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>车次明细</td>
+              <td class="indicator">送货单号</td>
+              <td>Surat Jalan编号</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>包装产品</td>
+              <td class="indicator">发货袋数/箱数</td>
+              <td>袋装或箱装产品发货数量</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>质量</td>
+              <td class="indicator">FFA</td>
+              <td>发货产品酸价</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>质量</td>
+              <td class="indicator">水分</td>
+              <td>发货产品水分</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>质量</td>
+              <td class="indicator">杂质</td>
+              <td>发货产品杂质</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>异常</td>
+              <td class="indicator">发货异常说明</td>
+              <td>票据、车辆、合同、质量、延迟等异常</td>
+            </tr>
+            
+            <tr data-dept="工厂" data-module="发货">
+              <td>工厂</td>
+              <td>发货</td>
+              <td>工厂产品发货统计表</td>
+              <td>各园区分级数据以及相应的车次数据</td>
+              <td>备注</td>
+              <td class="indicator">备注</td>
+              <td>其他说明</td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="talking">
+      <div class="section-head">
+        <h2>汇报说明</h2>
+      </div>
+      <div class="talking">
+        <p>本次整理的是现有报表指标目录，目标是让各部门先从整体上看清楚：当前集团正在统计哪些业务、哪些表单、哪些指标。</p>
+        <p>大会上建议重点讨论三件事：指标范围是否完整，业务分类是否合理，是否存在明显缺失或明显不需要的大类指标。</p>
+        <p>具体到每个指标的统计口径、单位、公式、责任人，建议在大会后按业务模块进行小范围确认。</p>
+      </div>
+    </section>
+    <div class="footer">数据来源：SharePoint 工作簿《2.指标名修改》。生成文件：指标清单汇报.html。</div>
+  </main>
+  <script>
+    window.__SUMMARY__ = {"totalIndicators": 529, "totalReports": 27, "totalModules": 15, "deptCounts": {"农业": 289, "工厂": 240}};
+    const deptFilter = document.getElementById('deptFilter');
+    const moduleFilter = document.getElementById('moduleFilter');
+    const keywordFilter = document.getElementById('keywordFilter');
+    const rows = Array.from(document.querySelectorAll('#detailTable tbody tr'));
+
+    function moduleCountsForDept(dept) {
+      const counts = {};
+      for (const row of rows) {
+        if (dept && row.dataset.dept !== dept) continue;
+        const module = row.dataset.module;
+        counts[module] = (counts[module] || 0) + 1;
+      }
+      return counts;
+    }
+
+    function refreshModuleOptions() {
+      const current = moduleFilter.value;
+      const counts = moduleCountsForDept(deptFilter.value);
+      const modules = Object.keys(counts).sort((a, b) => a.localeCompare(b, 'zh-CN'));
+
+      moduleFilter.innerHTML = '<option value="">全部模块</option>';
+      for (const module of modules) {
+        const option = document.createElement('option');
+        option.value = module;
+        option.textContent = `${module}（${counts[module]}）`;
+        moduleFilter.appendChild(option);
+      }
+
+      if (current && counts[current]) {
+        moduleFilter.value = current;
+      } else {
+        moduleFilter.value = '';
+      }
+    }
+
+    function collapseCells() {
+      rows.forEach(row => {
+        [0, 1, 2, 3, 4].forEach(index => {
+          const cell = row.cells[index];
+          cell.style.display = '';
+          cell.rowSpan = 1;
+        });
+      });
+
+      const visibleRows = rows.filter(row => row.style.display !== 'none');
+      let start = 0;
+
+      function reportKey(row) {
+        return [0, 1, 2, 3].map(index => row.cells[index].textContent.trim()).join('|');
+      }
+
+      while (start < visibleRows.length) {
+        const key = reportKey(visibleRows[start]);
+        let end = start + 1;
+        while (end < visibleRows.length && reportKey(visibleRows[end]) === key) {
+          end += 1;
+        }
+
+        const span = end - start;
+        if (span > 1) {
+          [0, 1, 2, 3].forEach(index => {
+            visibleRows[start].cells[index].rowSpan = span;
+          });
+          for (let i = start + 1; i < end; i += 1) {
+            [0, 1, 2, 3].forEach(index => {
+              visibleRows[i].cells[index].style.display = 'none';
+            });
+          }
+        }
+
+        let groupStart = start;
+        while (groupStart < end) {
+          const group = visibleRows[groupStart].cells[4].textContent.trim();
+          let groupEnd = groupStart + 1;
+          while (
+            groupEnd < end &&
+            visibleRows[groupEnd].cells[4].textContent.trim() === group
+          ) {
+            groupEnd += 1;
+          }
+          const groupSpan = groupEnd - groupStart;
+          if (groupSpan > 1) {
+            visibleRows[groupStart].cells[4].rowSpan = groupSpan;
+            for (let i = groupStart + 1; i < groupEnd; i += 1) {
+              visibleRows[i].cells[4].style.display = 'none';
+            }
+          }
+          groupStart = groupEnd;
+        }
+
+        start = end;
+      }
+    }
+
+    function applyFilters() {
+      const dept = deptFilter.value;
+      const module = moduleFilter.value;
+      const keyword = keywordFilter.value.trim().toLowerCase();
+      for (const row of rows) {
+        const text = row.textContent.toLowerCase();
+        const show =
+          (!dept || row.dataset.dept === dept) &&
+          (!module || row.dataset.module === module) &&
+          (!keyword || text.includes(keyword));
+        row.style.display = show ? '' : 'none';
+      }
+      collapseCells();
+    }
+    deptFilter.addEventListener('change', () => {
+      refreshModuleOptions();
+      applyFilters();
+    });
+    moduleFilter.addEventListener('change', applyFilters);
+    keywordFilter.addEventListener('input', applyFilters);
+    refreshModuleOptions();
+    collapseCells();
+  </script>
+</body>
+</html>

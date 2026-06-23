@@ -1,0 +1,10 @@
+frontend/node_modules/
+backend/.venv/
+backend/.env
+frontend/dist/
+frontend/.vite/
+backend/storage/
+storage/
+data/
+work-local/
+**/__pycache__/
