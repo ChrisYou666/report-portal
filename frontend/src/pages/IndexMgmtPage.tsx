@@ -8,7 +8,7 @@ import {
   getDbTables, getDbColumns,
   getScheduledSyncs, createScheduledSync, updateScheduledSync, deleteScheduledSync, triggerScheduledSync,
   getTeamsConfig, updateTeamsConfig, testTeamsWebhook,
-  getTeamsBotConversations, getTeamsBotStatus, getIndexNotifications, updateIndexNotification, testIndexNotification, testTeamsBotConversation,
+  getTeamsBotConversations, getTeamsBotStatus, getIndexNotifications, updateIndexNotification, testIndexNotification, testTeamsBotConversation, updateTeamsBotConversationDisplayName,
   previewInitDb, runInitDb,
 } from '../services/api'
 import type { HarvestDailyPreviewItem, HarvestMonitorResult, HarvestPipelineSyncResult, IndexDef, IndexDefIn, SubMetricIn, CompositeFormula, SmSyncItem, ScheduledSyncIn, ScheduledSyncOut, TeamsConfig, TeamsBotConversation, TeamsBotStatus, IndexNotificationConfig, IndexNotificationInput, InitDbPreview, InitDbResult } from '../services/api'
@@ -1263,6 +1263,8 @@ function NotifyTab() {
   const [rowSaving, setRowSaving]     = useState<string | null>(null)
   const [rowTesting, setRowTesting]   = useState<string | null>(null)
   const [targetTesting, setTargetTesting] = useState<number | null>(null)
+  const [targetSaving, setTargetSaving] = useState<number | null>(null)
+  const [targetDrafts, setTargetDrafts] = useState<Record<number, string>>({})
   const [msg, setMsg]                 = useState('')
   const [err, setErr]                 = useState('')
 
@@ -1282,6 +1284,7 @@ function NotifyTab() {
       setCfg(teams)
       setBotStatus(status)
       setTargets(convs)
+      setTargetDrafts(Object.fromEntries(convs.map(t => [t.id, t.display_name_override || ''])))
       setIndexCfgs(notifies)
     } catch (e: any) {
       setErr(e.message)
@@ -1323,6 +1326,21 @@ function NotifyTab() {
       setErr(e.message)
     } finally {
       setTargetTesting(null)
+    }
+  }
+
+  async function handleSaveTargetName(target: TeamsBotConversation) {
+    const value = (targetDrafts[target.id] ?? '').trim()
+    setTargetSaving(target.id); setMsg(''); setErr('')
+    try {
+      const updated = await updateTeamsBotConversationDisplayName(target.id, value)
+      setTargets(rows => rows.map(row => row.id === target.id ? updated : row))
+      setTargetDrafts(drafts => ({ ...drafts, [target.id]: updated.display_name_override || '' }))
+      setMsg(value ? `已命名目标：${updated.display_name}` : `已清除目标显示名：${updated.display_name}`)
+    } catch (e: any) {
+      setErr(e.message)
+    } finally {
+      setTargetSaving(null)
     }
   }
 
@@ -1478,9 +1496,21 @@ function NotifyTab() {
                         <td style={{ ...tdSt, color: T.textMuted(dark), fontSize: 12 }}>{new Date(t.last_seen_at).toLocaleString('zh-CN')}</td>
                         <td style={tdSt}>
                           {canEdit && (
-                            <button type="button" className="btn-row" onClick={() => handleTestTarget(t)} disabled={targetTesting === t.id || t.is_validation_target}>
-                              {targetTesting === t.id ? '发送中' : '测试'}
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                              <input
+                                className="entry-cell-input"
+                                style={{ ...inputSt, width: 220, fontSize: 12 }}
+                                value={targetDrafts[t.id] ?? ''}
+                                onChange={e => setTargetDrafts(drafts => ({ ...drafts, [t.id]: e.target.value }))}
+                                placeholder="显示名，如 PT... / Generals"
+                              />
+                              <button type="button" className="btn-row" onClick={() => handleSaveTargetName(t)} disabled={targetSaving === t.id}>
+                                {targetSaving === t.id ? '保存中' : '命名'}
+                              </button>
+                              <button type="button" className="btn-row" onClick={() => handleTestTarget(t)} disabled={targetTesting === t.id || t.is_validation_target}>
+                                {targetTesting === t.id ? '发送中' : '测试'}
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>

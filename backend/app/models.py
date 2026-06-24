@@ -1234,6 +1234,7 @@ class TeamsBotConversation(Base):
     channel_id: Mapped[str] = mapped_column(String(160), default="")
     conversation_type: Mapped[str] = mapped_column(String(40), default="")
     name: Mapped[str] = mapped_column(String(240), default="")
+    display_name_override: Mapped[str] = mapped_column(String(240), default="")
     user_aad_object_id: Mapped[str] = mapped_column(String(160), default="")
     user_name: Mapped[str] = mapped_column(String(240), default="")
     raw_activity: Mapped[str] = mapped_column(Text, default="")

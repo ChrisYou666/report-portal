@@ -683,6 +683,7 @@ export type TeamsBotConversation = {
   channel_id: string
   conversation_type: string
   name: string
+  display_name_override: string
   user_aad_object_id: string
   user_name: string
   display_name: string
@@ -743,6 +744,13 @@ export async function getTeamsBotConversations(): Promise<TeamsBotConversation[]
 
 export async function testTeamsBotConversation(id: number): Promise<{ ok: boolean; response: unknown }> {
   return postJson(`/teams-bot/conversations/${id}/test`, {})
+}
+
+export async function updateTeamsBotConversationDisplayName(
+  id: number,
+  displayName: string,
+): Promise<TeamsBotConversation> {
+  return putJson<TeamsBotConversation>(`/teams-bot/conversations/${id}/display-name`, { display_name: displayName })
 }
 
 export async function getIndexNotifications(): Promise<IndexNotificationConfig[]> {

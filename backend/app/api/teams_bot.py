@@ -28,6 +28,7 @@ class TeamsBotConversationOut(BaseModel):
     channel_id: str
     conversation_type: str
     name: str
+    display_name_override: str = ""
     user_aad_object_id: str
     user_name: str
     display_name: str = ""
@@ -47,6 +48,10 @@ class TeamsBotStatusOut(BaseModel):
     app_password_configured: bool
     validate_incoming: bool
     messaging_endpoint: str
+
+
+class TeamsBotConversationNameIn(BaseModel):
+    display_name: str = ""
 
 
 def _activity_text(activity: dict[str, Any]) -> str:
@@ -130,8 +135,12 @@ def _conversation_display(row: TeamsBotConversation) -> dict[str, Any]:
     channel_name = channel.get("name") or ""
     sender_name = row.user_name or sender.get("name") or ""
     is_validation = _is_validation_target(row, activity)
+    override_name = (row.display_name_override or "").strip()
 
-    if is_validation:
+    if override_name:
+        raw_name = row.name or conversation.get("name") or _short_id(row.conversation_id)
+        display_name = override_name
+    elif is_validation:
         display_name = f"验证会话：{row.name or conversation.get('name') or _short_id(row.conversation_id)}"
     elif conv_type == "personal":
         display_name = f"个人：{sender_name or row.name or _short_id(row.conversation_id)}"
@@ -160,6 +169,8 @@ def _conversation_display(row: TeamsBotConversation) -> dict[str, Any]:
         details.append(f"Channel ID {_short_id(row.channel_id)}")
     if row.user_aad_object_id:
         details.append(f"AAD {_short_id(row.user_aad_object_id)}")
+    if override_name:
+        details.append(f"原始名称 {raw_name}")
     details.append(f"会话 ID {_short_id(row.conversation_id)}")
     if is_validation:
         details.insert(0, "Teams App 验证产生，不建议作为正式通知目标")
@@ -193,6 +204,7 @@ def _conversation_out(row: TeamsBotConversation) -> TeamsBotConversationOut:
         "channel_id": row.channel_id,
         "conversation_type": row.conversation_type,
         "name": row.name,
+        "display_name_override": row.display_name_override,
         "user_aad_object_id": row.user_aad_object_id,
         "user_name": row.user_name,
         "last_seen_at": row.last_seen_at,
@@ -261,6 +273,22 @@ def list_teams_bot_conversations(
         .all()
     )
     return [_conversation_out(row) for row in rows]
+
+
+@router.put("/teams-bot/conversations/{conversation_pk}/display-name", response_model=TeamsBotConversationOut)
+def update_teams_bot_conversation_display_name(
+    conversation_pk: int,
+    body: TeamsBotConversationNameIn,
+    db: Session = Depends(get_db),
+    _user: User = Depends(require_roles("admin", "analyst")),
+):
+    target = db.get(TeamsBotConversation, conversation_pk)
+    if not target:
+        raise HTTPException(404, "Teams Bot 目标不存在")
+    target.display_name_override = body.display_name.strip()[:240]
+    db.commit()
+    db.refresh(target)
+    return _conversation_out(target)
 
 
 @router.post("/teams-bot/conversations/{conversation_pk}/test")
