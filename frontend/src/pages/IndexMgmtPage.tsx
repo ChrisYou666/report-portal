@@ -1310,9 +1310,9 @@ function NotifyTab() {
       teams_conversation_id: row.teams_conversation_id,
       cron_minute: row.cron_minute,
       cron_hour: row.cron_hour,
-      cron_day: row.cron_day,
-      cron_month: row.cron_month,
-      cron_dow: row.cron_dow,
+      cron_day: '*',
+      cron_month: '*',
+      cron_dow: '*',
       enabled: row.enabled,
     }
     setRowSaving(row.index_code); setMsg(''); setErr('')
@@ -1464,7 +1464,7 @@ function NotifyTab() {
                     <th style={thSt}>Teams 目标</th>
                     <th style={thSt}>时</th>
                     <th style={thSt}>分</th>
-                    <th style={thSt}>星期</th>
+                    <th style={thSt}>频率</th>
                     <th style={thSt}>启用</th>
                     <th style={thSt}>状态</th>
                     <th style={thSt}>操作</th>
@@ -1495,9 +1495,8 @@ function NotifyTab() {
                           <input className="entry-cell-input" style={{ ...inputSt, width: 58 }} value={row.cron_minute}
                             disabled={!canEdit} onChange={e => patchIndexCfg(row.index_code, { cron_minute: e.target.value })} />
                         </td>
-                        <td style={tdSt}>
-                          <input className="entry-cell-input" style={{ ...inputSt, width: 82 }} value={row.cron_dow}
-                            disabled={!canEdit} onChange={e => patchIndexCfg(row.index_code, { cron_dow: e.target.value })} placeholder="*" />
+                        <td style={{ ...tdSt, color: T.textSecondary(dark), fontSize: 12 }}>
+                          每天
                         </td>
                         <td style={tdSt}>
                           <select style={{ ...selSt, width: 82 }} value={row.enabled ? 'yes' : 'no'}
@@ -1533,7 +1532,7 @@ function NotifyTab() {
               </table>
             </div>
             <div style={{ color: T.textMuted(dark), fontSize: 11, marginTop: 10 }}>
-              时间使用服务器时区 UTC+8。星期填 * 表示每天，mon-fri 表示周一到周五。
+              时间使用服务器时区 UTC+8。指标通知固定每天发送，可分别设置每个指标的小时和分钟。
             </div>
           </div>
         </div>

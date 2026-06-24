@@ -10,7 +10,12 @@ from sqlalchemy.orm import Session
 from app.core.deps import require_roles
 from app.db import get_db
 from app.models import IndexNotificationConfig, TeamsBotConversation, User
-from app.services.index_notifications import ensure_index_notification_defaults, preview_index_notification, send_index_notification
+from app.services.index_notifications import (
+    ensure_index_notification_defaults,
+    force_daily_schedule,
+    preview_index_notification,
+    send_index_notification,
+)
 
 router = APIRouter(tags=["index-notifications"])
 
@@ -98,7 +103,10 @@ def update_index_notification(
     if body.teams_conversation_id and not db.get(TeamsBotConversation, body.teams_conversation_id):
         raise HTTPException(400, "Teams Bot 目标不存在")
     for k, v in body.model_dump().items():
+        if k in {"cron_day", "cron_month", "cron_dow"}:
+            continue
         setattr(cfg, k, v)
+    force_daily_schedule(cfg)
     cfg.updated_by = user.username
     db.commit()
     db.refresh(cfg)

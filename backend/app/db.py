@@ -133,6 +133,8 @@ def ensure_schema_updates() -> None:
             updated_at timestamp not null default now()
         )""",
         "create unique index if not exists uq_index_notification_code on index_notification_configs(index_code)",
+        "update index_notification_configs set cron_day='*', cron_month='*', cron_dow='*' "
+        "where cron_day is distinct from '*' or cron_month is distinct from '*' or cron_dow is distinct from '*'",
     ]:
         try:
             with engine.begin() as conn:

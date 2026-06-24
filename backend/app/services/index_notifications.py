@@ -47,6 +47,12 @@ FY_MONTHS = [9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8]
 FY_START_MONTH = 9
 
 
+def force_daily_schedule(cfg: IndexNotificationConfig) -> None:
+    cfg.cron_day = "*"
+    cfg.cron_month = "*"
+    cfg.cron_dow = "*"
+
+
 def ensure_index_notification_defaults(db: Session) -> list[IndexNotificationConfig]:
     existing = {
         row.index_code: row
@@ -62,7 +68,9 @@ def ensure_index_notification_defaults(db: Session) -> list[IndexNotificationCon
             db.add(row)
             existing[item["code"]] = row
         else:
-            existing[item["code"]].index_name = item["name"]
+            row = existing[item["code"]]
+            row.index_name = item["name"]
+            force_daily_schedule(row)
     db.commit()
     return (
         db.query(IndexNotificationConfig)
