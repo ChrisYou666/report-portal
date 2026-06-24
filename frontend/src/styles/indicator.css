@@ -468,14 +468,13 @@
     margin-bottom: 12px;
     padding: 12px !important;
     border-radius: 8px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
+    overflow: visible;
   }
 
   .ind-chart-box {
-    min-width: 560px;
-    height: 320px !important;
+    width: 100%;
+    min-width: 0;
+    height: 300px !important;
   }
 
   .ind-summary-card {
@@ -526,14 +525,15 @@
   }
 
   .ind-legend {
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
+    flex-wrap: wrap !important;
+    gap: 8px 10px !important;
+    overflow: visible;
+    padding: 0 2px 6px;
   }
 
   .ind-legend > div {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
+    font-size: 11px !important;
   }
 
   .ind-login-wrap {

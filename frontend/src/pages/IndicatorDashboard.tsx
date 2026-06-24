@@ -118,43 +118,56 @@ function MultiLineChart({ xData, series }: { xData: string[]; series: Series[] }
     const maxVal  = allVals.length ? Math.max(...allVals) : 200
     const yMin = allVals.length ? Math.floor(minVal - 2) : undefined
     const yMax = allVals.length ? Math.ceil(maxVal + 2)  : undefined
+    const compact = (divRef.current?.clientWidth ?? window.innerWidth) <= 520 || window.innerWidth <= 720
+    const tooltipRows = compact ? 8 : 30
 
     chartRef.current.setOption({
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis',
+        confine: true,
         backgroundColor: '#1e2130',
         borderColor: 'rgba(255,255,255,0.1)',
         textStyle: { color: '#e2e8f0', fontSize: 12 },
         axisPointer: { lineStyle: { color: 'rgba(255,255,255,0.12)' } },
+        extraCssText: compact
+          ? 'max-width:260px;max-height:220px;overflow-y:auto;white-space:normal;'
+          : 'max-width:520px;',
         formatter: (params: any[]) => {
           const active = params.filter(p => p.value != null)
           if (!active.length) return params[0]?.name ?? ''
           let s = `<div style="font-weight:600;color:#94a3b8;margin-bottom:5px">${params[0]?.name}</div>`
-          active.forEach(p => {
+          active.slice(0, tooltipRows).forEach(p => {
             s += `<div style="display:flex;align-items:center;gap:8px;margin:2px 0">
               <span style="display:inline-block;width:14px;height:2px;background:${p.color};border-radius:1px;opacity:${p.data?.dashed?0.6:1}"></span>
-              <span style="color:#cbd5e1">${p.seriesName}</span>
+              <span style="color:#cbd5e1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.seriesName}</span>
               <span style="font-weight:700;color:#fff;margin-left:auto;padding-left:16px">${Number(p.value).toFixed(2)}</span>
             </div>`
           })
+          if (active.length > tooltipRows) {
+            s += `<div style="margin-top:4px;color:#6b7280;font-size:11px">还有 ${active.length - tooltipRows} 项</div>`
+          }
           return s
         },
       },
       legend: { show: false },
-      grid: { top: 20, right: 28, bottom: 52, left: 68 },
+      grid: compact
+        ? { top: 16, right: 8, bottom: 58, left: 8, containLabel: true }
+        : { top: 20, right: 28, bottom: 52, left: 68 },
       xAxis: {
         type: 'category', data: xData,
         axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
         axisTick: { show: false },
-        axisLabel: { color: '#6b7280', fontSize: 11 },
+        axisLabel: compact
+          ? { color: '#6b7280', fontSize: 10, interval: 0, rotate: xData.length > 8 ? 32 : 0, hideOverlap: false }
+          : { color: '#6b7280', fontSize: 11 },
       },
       yAxis: {
         type: 'value', name: '指数值',
         min: yMin,
         max: yMax,
-        nameTextStyle: { color: '#6b7280', fontSize: 11, padding: [0, 36, 0, 0] },
-        axisLabel: { color: '#6b7280', fontSize: 11 },
+        nameTextStyle: { color: '#6b7280', fontSize: 11, padding: compact ? [0, 0, 0, 0] : [0, 36, 0, 0] },
+        axisLabel: { color: '#6b7280', fontSize: compact ? 10 : 11 },
         splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } },
         axisLine: { show: false },
       },
