@@ -182,7 +182,7 @@ function MultiLineChart({ xData, series }: { xData: string[]; series: Series[] }
     }, true)
   }, [xData, series])
 
-  return <div ref={divRef} style={{ height: 440 }} />
+  return <div ref={divRef} className="ind-chart-box" style={{ height: 440 }} />
 }
 
 // ── 页面 ──────────────────────────────────────────────────────
@@ -425,7 +425,7 @@ export default function IndicatorDashboard() {
     if (large) {
       const deltaColor = c.delta !== null && c.delta >= 0 ? '#4ade80' : '#f87171'
       return (
-        <div style={{
+        <div className="ind-summary-card" style={{
           background: 'linear-gradient(135deg,#1e2130,#232840)',
           borderRadius: 10, padding: '14px 24px',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -453,7 +453,7 @@ export default function IndicatorDashboard() {
       )
     }
     return (
-      <div style={{
+      <div className="ind-compact-card" style={{
         background: '#1a1d2a', borderRadius: 10, padding: '10px 14px',
         border: `1px solid ${c.color}30`,
         borderLeft: `3px solid ${c.color}${c.dashed ? '80' : 'cc'}`,
@@ -490,7 +490,7 @@ export default function IndicatorDashboard() {
   function renderLegend(seriesList: Series[]) {
     if (seriesList.length <= 1) return null
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+      <div className="ind-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
         {seriesList.map((s, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#8892a4' }}>
             <span style={{ display: 'inline-block', width: 18, height: 2, borderRadius: s.dashed ? 0 : 1,
@@ -512,7 +512,7 @@ export default function IndicatorDashboard() {
       : null
 
   return (
-    <div style={{ display: 'grid', gap: 20, width: '100%', minWidth: 0 }}>
+    <div className="ind-dashboard-grid" style={{ display: 'grid', gap: 20, width: '100%', minWidth: 0 }}>
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -537,7 +537,7 @@ export default function IndicatorDashboard() {
       </div>
 
       {/* ── 单选选择器 ── */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+      <div className="ind-index-chip-row" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
         {/* 92综合指数 */}
         <button type="button" onClick={() => setSelectedId('composite')} style={{
           display: 'flex', alignItems: 'center', gap: 5,
