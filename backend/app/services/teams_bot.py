@@ -135,9 +135,13 @@ def send_adaptive_card(
     if actions:
         card_content["actions"] = actions
 
+    preview = _notification_preview(title, lines)
     payload = {
         "type": "message",
         "from": {"id": settings.teams_bot_app_id, "name": settings.teams_bot_name},
+        "text": preview,
+        "summary": preview,
+        "channelData": _notification_channel_data(),
         "attachments": [{
             "contentType": "application/vnd.microsoft.card.adaptive",
             "content": card_content,
@@ -154,8 +158,28 @@ def send_text_message(conversation: TeamsBotConversation, text: str) -> dict[str
         "type": "message",
         "from": {"id": settings.teams_bot_app_id, "name": settings.teams_bot_name},
         "text": text,
+        "summary": _truncate_preview(text),
+        "channelData": _notification_channel_data(),
     }
     return _post_activity(conversation, payload)
+
+
+def _notification_channel_data() -> dict[str, Any]:
+    return {"notification": {"alert": True}}
+
+
+def _notification_preview(title: str, lines: list[str]) -> str:
+    parts = [title, *(line for line in lines if line)]
+    return _truncate_preview(" | ".join(part.strip() for part in parts if part.strip()))
+
+
+def _truncate_preview(text: str, max_len: int = 240) -> str:
+    value = " ".join(str(text or "").split())
+    if not value:
+        value = settings.teams_bot_name or "Report Portal Bot"
+    if len(value) <= max_len:
+        return value
+    return value[: max_len - 1].rstrip() + "…"
 
 
 def _post_activity(conversation: TeamsBotConversation, payload: dict[str, Any]) -> dict[str, Any]:
