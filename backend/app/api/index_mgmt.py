@@ -1154,7 +1154,7 @@ def test_teams_webhook(
         {
             "type": "TextBlock",
             "isSubtle": True, "size": "Small", "spacing": "Medium",
-            "text": f"经营指数平台 — 测试推送  {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC",
+            "text": f"92综合指数 — 测试推送  {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC",
         },
     ]
     if portal_url:

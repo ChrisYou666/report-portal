@@ -304,7 +304,7 @@ def test_teams_bot_conversation(
     try:
         result = send_adaptive_card(
             target,
-            title="经营指数平台 Bot 测试",
+            title="92综合指数 Bot 测试",
             lines=[
                 f"目标：{display['display_name']}",
                 f"详情：{display['display_detail']}",

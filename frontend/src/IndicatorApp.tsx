@@ -37,7 +37,7 @@ function IndicatorLogin({ onLogin }: { onLogin: (u: AuthUser) => void }) {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ width: 52, height: 52, background: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, margin: '0 auto 14px' }}>📊</div>
-          <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 18, marginBottom: 4 }}>经营指数平台</div>
+          <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 18, marginBottom: 4 }}>92综合指数</div>
           <div style={{ color: '#4b5563', fontSize: 13 }}>请使用数据中台账户登录</div>
         </div>
 
@@ -93,8 +93,8 @@ export default function IndicatorApp() {
         <div className="ind-logo">
           <div className="ind-logo-icon">📊</div>
           <div className="ind-logo-text">
-            <strong>经营指数平台</strong>
-            <small>Index Platform</small>
+            <strong>92综合指数</strong>
+            <small>92 Composite Index</small>
           </div>
         </div>
 
