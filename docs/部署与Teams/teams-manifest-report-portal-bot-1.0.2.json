@@ -1,0 +1,55 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.25/MicrosoftTeams.schema.json",
+  "version": "1.0.2",
+  "manifestVersion": "1.25",
+  "id": "8c5d2df2-4650-4d73-be4c-d17e28b26e5d",
+  "name": {
+    "short": "Report Portal Bot"
+  },
+  "developer": {
+    "name": "Julong",
+    "websiteUrl": "https://julongtongchuan.icu",
+    "privacyUrl": "https://julongtongchuan.icu",
+    "termsOfUseUrl": "https://julongtongchuan.icu"
+  },
+  "description": {
+    "short": "Report portal notification bot",
+    "full": "Sends scheduled report portal indicator notifications to Teams."
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [
+    {
+      "botId": "72ba3fa0-13ee-4386-9606-3c5a011a41e8",
+      "scopes": [
+        "personal",
+        "team",
+        "groupChat"
+      ],
+      "isNotificationOnly": false,
+      "supportsCalling": false,
+      "supportsVideo": false,
+      "supportsFiles": false
+    }
+  ],
+  "staticTabs": [
+    {
+      "entityId": "indicator",
+      "name": "指数看板",
+      "contentUrl": "https://julongtongchuan.icu/report-portal/indicator",
+      "websiteUrl": "https://julongtongchuan.icu/report-portal/indicator",
+      "scopes": [
+        "personal",
+        "team",
+        "groupChat"
+      ]
+    }
+  ],
+  "validDomains": [
+    "julongtongchuan.icu"
+  ],
+  "supportsChannelFeatures": "tier1"
+}
