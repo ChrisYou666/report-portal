@@ -8,7 +8,7 @@ import {
   getDbTables, getDbColumns,
   getScheduledSyncs, createScheduledSync, updateScheduledSync, deleteScheduledSync, triggerScheduledSync,
   getTeamsConfig, updateTeamsConfig, testTeamsWebhook,
-  getTeamsBotConversations, getTeamsBotStatus, getIndexNotifications, updateIndexNotification, testIndexNotification,
+  getTeamsBotConversations, getTeamsBotStatus, getIndexNotifications, updateIndexNotification, testIndexNotification, testTeamsBotConversation,
   previewInitDb, runInitDb,
 } from '../services/api'
 import type { HarvestDailyPreviewItem, HarvestMonitorResult, HarvestPipelineSyncResult, IndexDef, IndexDefIn, SubMetricIn, CompositeFormula, SmSyncItem, ScheduledSyncIn, ScheduledSyncOut, TeamsConfig, TeamsBotConversation, TeamsBotStatus, IndexNotificationConfig, IndexNotificationInput, InitDbPreview, InitDbResult } from '../services/api'
@@ -1262,6 +1262,7 @@ function NotifyTab() {
   const [testing, setTesting]         = useState(false)
   const [rowSaving, setRowSaving]     = useState<string | null>(null)
   const [rowTesting, setRowTesting]   = useState<string | null>(null)
+  const [targetTesting, setTargetTesting] = useState<number | null>(null)
   const [msg, setMsg]                 = useState('')
   const [err, setErr]                 = useState('')
 
@@ -1303,6 +1304,26 @@ function NotifyTab() {
 
   function patchIndexCfg(code: string, patch: Partial<IndexNotificationConfig>) {
     setIndexCfgs(rows => rows.map(row => row.index_code === code ? { ...row, ...patch } : row))
+  }
+
+  function targetName(t: TeamsBotConversation) {
+    return t.display_name || t.name || `目标 ${t.id}`
+  }
+
+  function targetOptionLabel(t: TeamsBotConversation) {
+    return t.target_label || `${t.conversation_type || 'unknown'} | ${targetName(t)}`
+  }
+
+  async function handleTestTarget(target: TeamsBotConversation) {
+    setTargetTesting(target.id); setMsg(''); setErr('')
+    try {
+      await testTeamsBotConversation(target.id)
+      setMsg(`测试消息已发送到：${targetName(target)}`)
+    } catch (e: any) {
+      setErr(e.message)
+    } finally {
+      setTargetTesting(null)
+    }
   }
 
   async function handleSaveIndex(row: IndexNotificationConfig) {
@@ -1418,6 +1439,9 @@ function NotifyTab() {
             <div style={{ fontSize: 12, color: T.textMuted(dark), marginBottom: 14 }}>
               Messaging endpoint：<code style={{ color: T.codeColor(dark) }}>{botStatus?.messaging_endpoint}</code>
             </div>
+            <div style={{ fontSize: 12, color: T.textMuted(dark), marginBottom: 14 }}>
+              若频道名仍显示为 ID，请在对应 Teams 频道里 @Report Portal Bot 发送 hi，再点击刷新目标；AppValidation 开头的是 Teams 验证会话，不建议选择。
+            </div>
 
             {targets.length === 0 ? (
               <div className="empty-state">暂无 Bot 目标。把 Bot 安装到 Teams 频道或个人聊天后，发送任意消息给 Bot，再点刷新。</div>
@@ -1429,17 +1453,36 @@ function NotifyTab() {
                       <th style={thSt}>目标</th>
                       <th style={thSt}>类型</th>
                       <th style={thSt}>最后捕获</th>
+                      <th style={thSt}>操作</th>
                     </tr>
                   </thead>
                   <tbody>
                     {targets.map(t => (
                       <tr key={t.id}>
                         <td style={tdSt}>
-                          <div style={{ color: T.textPrimary(dark), fontWeight: 600 }}>{t.name || `目标 ${t.id}`}</div>
-                          <div style={{ color: T.textMuted(dark), fontSize: 11 }}>{t.user_name || t.channel_id || t.team_id}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{ color: T.textPrimary(dark), fontWeight: 600 }}>{targetName(t)}</span>
+                            {t.is_validation_target && (
+                              <span style={{ fontSize: 11, color: '#fbbf24', background: 'rgba(251,191,36,0.12)', borderRadius: 4, padding: '1px 6px' }}>
+                                验证会话
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ color: T.textMuted(dark), fontSize: 11, marginTop: 3, maxWidth: 720, whiteSpace: 'normal', wordBreak: 'break-all' }}>
+                            {t.display_detail || t.user_name || t.channel_id || t.team_id || t.conversation_id}
+                          </div>
                         </td>
-                        <td style={{ ...tdSt, color: T.textSecondary(dark), fontSize: 12 }}>{t.conversation_type || 'unknown'}</td>
+                        <td style={{ ...tdSt, color: T.textSecondary(dark), fontSize: 12 }}>
+                          {t.conversation_type === 'personal' ? '个人' : t.conversation_type === 'channel' ? '频道' : t.conversation_type || 'unknown'}
+                        </td>
                         <td style={{ ...tdSt, color: T.textMuted(dark), fontSize: 12 }}>{new Date(t.last_seen_at).toLocaleString('zh-CN')}</td>
+                        <td style={tdSt}>
+                          {canEdit && (
+                            <button type="button" className="btn-row" onClick={() => handleTestTarget(t)} disabled={targetTesting === t.id || t.is_validation_target}>
+                              {targetTesting === t.id ? '发送中' : '测试'}
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1484,7 +1527,11 @@ function NotifyTab() {
                             disabled={!canEdit}
                             onChange={e => patchIndexCfg(row.index_code, { teams_conversation_id: e.target.value ? Number(e.target.value) : null })}>
                             <option value="">-- 请选择 Bot 目标 --</option>
-                            {targets.map(t => <option key={t.id} value={t.id}>{t.name || `目标 ${t.id}`}</option>)}
+                            {targets.map(t => (
+                              <option key={t.id} value={t.id} disabled={t.is_validation_target}>
+                                {targetOptionLabel(t)}
+                              </option>
+                            ))}
                           </select>
                         </td>
                         <td style={tdSt}>

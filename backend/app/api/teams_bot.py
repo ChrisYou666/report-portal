@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from datetime import datetime
 from typing import Any, Optional
@@ -29,6 +30,13 @@ class TeamsBotConversationOut(BaseModel):
     name: str
     user_aad_object_id: str
     user_name: str
+    display_name: str = ""
+    display_detail: str = ""
+    target_label: str = ""
+    team_name: str = ""
+    channel_name: str = ""
+    sender_name: str = ""
+    is_validation_target: bool = False
     last_seen_at: datetime
     created_at: datetime
     updated_at: datetime
@@ -84,6 +92,116 @@ def _command_reply_text() -> str:
     )
 
 
+def _raw_activity(row: TeamsBotConversation) -> dict[str, Any]:
+    try:
+        data = json.loads(row.raw_activity or "{}")
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _short_id(value: str, keep: int = 8) -> str:
+    if not value:
+        return ""
+    return value if len(value) <= keep * 2 + 3 else f"{value[:keep]}...{value[-keep:]}"
+
+
+def _is_validation_target(row: TeamsBotConversation, activity: dict[str, Any]) -> bool:
+    values = [
+        row.name,
+        row.user_name,
+        (activity.get("conversation") or {}).get("name") or "",
+        ((activity.get("channelData") or {}).get("team") or {}).get("name") or "",
+        ((activity.get("channelData") or {}).get("channel") or {}).get("name") or "",
+    ]
+    return any(str(value).startswith("AppValidation-") for value in values)
+
+
+def _conversation_display(row: TeamsBotConversation) -> dict[str, Any]:
+    activity = _raw_activity(row)
+    channel_data = activity.get("channelData") or {}
+    conversation = activity.get("conversation") or {}
+    sender = activity.get("from") or {}
+    team = channel_data.get("team") or {}
+    channel = channel_data.get("channel") or {}
+
+    conv_type = row.conversation_type or conversation.get("conversationType") or ""
+    team_name = team.get("name") or ""
+    channel_name = channel.get("name") or ""
+    sender_name = row.user_name or sender.get("name") or ""
+    is_validation = _is_validation_target(row, activity)
+
+    if is_validation:
+        display_name = f"验证会话：{row.name or conversation.get('name') or _short_id(row.conversation_id)}"
+    elif conv_type == "personal":
+        display_name = f"个人：{sender_name or row.name or _short_id(row.conversation_id)}"
+    elif conv_type == "channel":
+        if team_name or channel_name:
+            display_name = "频道：" + " / ".join(part for part in [team_name, channel_name] if part)
+        elif row.name and row.name != "Teams 频道":
+            display_name = f"频道：{row.name}"
+        else:
+            display_name = f"频道：{_short_id(row.channel_id or row.conversation_id)}"
+    elif conv_type == "groupChat":
+        display_name = f"群聊：{row.name or _short_id(row.conversation_id)}"
+    else:
+        display_name = row.name or sender_name or conv_type or f"目标 {row.id}"
+
+    details = []
+    if sender_name:
+        details.append(f"用户 {sender_name}")
+    if team_name:
+        details.append(f"团队 {team_name}")
+    if channel_name:
+        details.append(f"频道 {channel_name}")
+    if row.team_id:
+        details.append(f"Team ID {_short_id(row.team_id)}")
+    if row.channel_id:
+        details.append(f"Channel ID {_short_id(row.channel_id)}")
+    if row.user_aad_object_id:
+        details.append(f"AAD {_short_id(row.user_aad_object_id)}")
+    details.append(f"会话 ID {_short_id(row.conversation_id)}")
+    if is_validation:
+        details.insert(0, "Teams App 验证产生，不建议作为正式通知目标")
+
+    type_label = {
+        "personal": "个人",
+        "channel": "频道",
+        "groupChat": "群聊",
+    }.get(conv_type, conv_type or "未知")
+    target_label = f"{type_label} | {display_name}"
+    if is_validation:
+        target_label = f"验证会话 | {display_name}"
+
+    return {
+        "display_name": display_name,
+        "display_detail": " ｜ ".join(details),
+        "target_label": target_label,
+        "team_name": team_name,
+        "channel_name": channel_name,
+        "sender_name": sender_name,
+        "is_validation_target": is_validation,
+    }
+
+
+def _conversation_out(row: TeamsBotConversation) -> TeamsBotConversationOut:
+    return TeamsBotConversationOut.model_validate({
+        "id": row.id,
+        "conversation_id": row.conversation_id,
+        "tenant_id": row.tenant_id,
+        "team_id": row.team_id,
+        "channel_id": row.channel_id,
+        "conversation_type": row.conversation_type,
+        "name": row.name,
+        "user_aad_object_id": row.user_aad_object_id,
+        "user_name": row.user_name,
+        "last_seen_at": row.last_seen_at,
+        "created_at": row.created_at,
+        "updated_at": row.updated_at,
+        **_conversation_display(row),
+    })
+
+
 @router.post("/teams-bot/messages")
 async def receive_teams_bot_activity(
     request: Request,
@@ -137,11 +255,12 @@ def list_teams_bot_conversations(
     db: Session = Depends(get_db),
     _user: User = Depends(require_roles("admin", "analyst")),
 ):
-    return (
+    rows = (
         db.query(TeamsBotConversation)
         .order_by(TeamsBotConversation.last_seen_at.desc(), TeamsBotConversation.id.desc())
         .all()
     )
+    return [_conversation_out(row) for row in rows]
 
 
 @router.post("/teams-bot/conversations/{conversation_pk}/test")
@@ -153,11 +272,14 @@ def test_teams_bot_conversation(
     target = db.get(TeamsBotConversation, conversation_pk)
     if not target:
         raise HTTPException(404, "Teams Bot 目标不存在")
+    display = _conversation_display(target)
     try:
         result = send_adaptive_card(
             target,
             title="经营指数平台 Bot 测试",
             lines=[
+                f"目标：{display['display_name']}",
+                f"详情：{display['display_detail']}",
                 "如果你能看到这条消息，说明 Bot 主动推送链路已经打通。",
                 f"发送时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             ],

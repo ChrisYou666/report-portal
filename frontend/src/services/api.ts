@@ -685,6 +685,13 @@ export type TeamsBotConversation = {
   name: string
   user_aad_object_id: string
   user_name: string
+  display_name: string
+  display_detail: string
+  target_label: string
+  team_name: string
+  channel_name: string
+  sender_name: string
+  is_validation_target: boolean
   last_seen_at: string
   created_at: string
   updated_at: string
