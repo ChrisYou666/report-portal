@@ -25,6 +25,8 @@ const INDICES = [
   { id: 'dividend',  name: '分红',      color: '#34d399' },
 ] as const
 
+const COMPOSITE_LINE_COLOR = '#ef4444'
+
 type IndexId = (typeof INDICES)[number]['id']
 type SelectedIndex = 'composite' | IndexId
 type FYKey   = 'current' | 'previous'
@@ -379,7 +381,7 @@ export default function IndicatorDashboard() {
       const label = showBothFY
         ? `92综合指数 ${dashed ? fyLabel('previous') : fyLabel('current')}`
         : '92综合指数'
-      return { id: 'composite' as IndexId, name: label, color: '#f8fafc', data, dashed, composite: true }
+      return { id: 'composite' as IndexId, name: label, color: COMPOSITE_LINE_COLOR, data, dashed, composite: true }
     })
   }, [allSubSeries, showBothFY])
 
